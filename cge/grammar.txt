@@ -1,0 +1,9 @@
+============= CGE Grammar =============
+
+cge -> (event|type)*
+event -> 'event' IDENTIFIER block
+type -> 'type' IDENTIFIER block
+block -> '{' property? (',' property)* '}'
+property -> IDENTIFIER ':' (IDENTIFIER|inlineType|generic)
+inlineType -> IDENTIFIER block
+generic -> ('list'|'map') '<' IDENTIFIER '>'
