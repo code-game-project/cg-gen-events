@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"strings"
 )
 
 type scanner struct {
@@ -171,12 +172,12 @@ func (s *scanner) generic() (*Generic, error) {
 			Type:   BIGINT,
 			Lexeme: name,
 		}
-	case "float", "float32":
+	case "float32":
 		generic = &Generic{
 			Type:   FLOAT32,
 			Lexeme: name,
 		}
-	case "float64":
+	case "float", "float64":
 		generic = &Generic{
 			Type:   FLOAT64,
 			Lexeme: name,
@@ -216,16 +217,28 @@ func (s *scanner) generic() (*Generic, error) {
 }
 
 func (s *scanner) comment() {
+	startColumn := s.currentColumn + 1
 	for s.peek() != '\n' {
 		s.nextCharacter()
 	}
-	s.addToken(COMMENT, nil)
+	s.tokens = append(s.tokens, Token{
+		Line:   s.line,
+		Column: startColumn,
+		Type:   COMMENT,
+		Lexeme: strings.TrimSpace(string(s.lines[s.line][startColumn : s.currentColumn+1])),
+	})
 }
 
 func (s *scanner) blockComment() error {
+	startColumn := s.currentColumn + 1
+	lines := make([][]rune, 0)
+
 	nestingLevel := 1
+	prevLine := s.line
+	line := make([]rune, 0)
 	for nestingLevel > 0 {
 		c, err := s.nextCharacter()
+
 		if c == '\000' || err != nil {
 			return err
 		}
@@ -237,10 +250,27 @@ func (s *scanner) blockComment() error {
 			nestingLevel--
 			continue
 		}
+
+		if prevLine != s.line {
+			prevLine = s.line
+			lines = append(lines, line)
+			line = make([]rune, 0)
+		}
+		line = append(line, c)
 	}
-	s.currentColumn -= 2
-	s.addToken(COMMENT, nil)
-	s.currentColumn += 2
+
+	for i, l := range lines {
+		text := strings.TrimSpace(strings.Replace(string(l), "*", "", 1))
+		if text != "" {
+			s.tokens = append(s.tokens, Token{
+				Line:   (prevLine - len(lines)) + i + 1,
+				Column: startColumn,
+				Type:   COMMENT,
+				Lexeme: text,
+			})
+		}
+	}
+
 	return nil
 }
 

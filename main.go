@@ -68,12 +68,16 @@ func main() {
 	_, fileName := path.Split(flag.Arg(0))
 	name := strings.ToLower(strings.TrimSuffix(fileName, path.Ext(fileName)))
 
-	_, errs := cge.Parse(inputFile)
+	objects, errs := cge.Parse(inputFile)
 	if len(errs) > 0 {
 		for _, e := range errs {
 			fmt.Fprintln(os.Stderr, e)
 		}
 		os.Exit(1)
+	}
+
+	for _, o := range objects {
+		fmt.Println(o)
 	}
 
 	for i, g := range generators {
