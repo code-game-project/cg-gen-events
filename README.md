@@ -1,6 +1,18 @@
 # cg-gen-events
 
-Easily generate [CodeGame](https://code-game-project.github.io/) event definitions for a variety of languages.
+Easily generate [CodeGame](https://code-game-project.github.io/) [event definitions](https://code-game-project.github.io/docs/code-game-events-language-specification.html) for a variety of languages.
+
+## Usage
+
+```sh
+cg-gen-events my_game.cge
+```
+
+Use `--help` for a list of available options.
+
+## Supported languages
+
+- Go
 
 ## License
 
