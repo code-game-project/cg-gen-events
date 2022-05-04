@@ -13,6 +13,9 @@ import (
 
 var availableGenerators = map[string]lang.Generator{
 	"go": &lang.Go{},
+	"golang": &lang.Go{},
+	"ts": &lang.TypeScript{},
+	"typescript": &lang.TypeScript{},
 }
 
 func main() {

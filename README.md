@@ -13,6 +13,7 @@ Use `--help` for a list of available options.
 ## Supported languages
 
 - Go
+- TypeScript
 
 ## License
 
