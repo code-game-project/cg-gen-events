@@ -58,9 +58,7 @@ func (g *Go) Generate(objects []cge.Object, gameName, dir string) error {
 
 func (g *Go) generateEvent(object cge.Object) {
 	g.writer.WriteString("\n")
-	for _, comment := range object.Comments {
-		g.writer.WriteString("// " + comment + "\n")
-	}
+	g.generateComments(object.Comments)
 	g.writer.WriteString(fmt.Sprintf("const Event%s cg.EventName = \"%s\"\n\n", snakeToPascal(object.Name), object.Name))
 	g.writer.WriteString(fmt.Sprintf("type Event%sData struct {\n", snakeToPascal(object.Name)))
 
@@ -71,9 +69,7 @@ func (g *Go) generateEvent(object cge.Object) {
 
 func (g *Go) generateType(object cge.Object) {
 	g.writer.WriteString("\n")
-	for _, comment := range object.Comments {
-		g.writer.WriteString("// " + comment + "\n")
-	}
+	g.generateComments(object.Comments)
 	g.writer.WriteString(fmt.Sprintf("type %s struct {\n", snakeToPascal(object.Name)))
 
 	g.generateProperties(object.Properties)
@@ -84,6 +80,12 @@ func (g *Go) generateType(object cge.Object) {
 func (g *Go) generateProperties(properties []cge.Property) {
 	for _, property := range properties {
 		g.writer.WriteString(fmt.Sprintf("\t%s %s `json:\"%s\"`\n", snakeToPascal(property.Name), g.goType(property.Type.Type, property.Type.Lexeme, property.Type.Generic), property.Name))
+	}
+}
+
+func (g *Go) generateComments(comments []string) {
+	for _, comment := range comments {
+		g.writer.WriteString("// " + comment + "\n")
 	}
 }
 
@@ -111,5 +113,5 @@ func (g *Go) goType(tokenType cge.TokenType, lexeme string, generic *cge.Generic
 	case cge.IDENTIFIER:
 		return snakeToPascal(lexeme)
 	}
-	return ""
+	return "any"
 }

@@ -17,7 +17,7 @@ type TypeScript struct {
 }
 
 func (g *TypeScript) Generate(objects []cge.Object, gameName, dir string) error {
-	file, err := os.Create(filepath.Join(dir, snakeToKebab(gameName) + "-events.d.ts"))
+	file, err := os.Create(filepath.Join(dir, snakeToKebab(gameName)+"-events.d.ts"))
 	if err != nil {
 		return err
 	}
@@ -45,9 +45,7 @@ func (g *TypeScript) Generate(objects []cge.Object, gameName, dir string) error 
 }
 
 func (g *TypeScript) generateEvent(object cge.Object) {
-	for _, comment := range object.Comments {
-		g.writer.WriteString("// " + comment + "\n")
-	}
+	g.generateComments(object.Comments)
 	g.writer.WriteString(fmt.Sprintf("export interface %s {\n", snakeToPascal(object.Name)))
 	g.writer.WriteString(fmt.Sprintf("  name: \"%s\",\n  data: {\n", object.Name))
 
@@ -57,13 +55,7 @@ func (g *TypeScript) generateEvent(object cge.Object) {
 }
 
 func (g *TypeScript) generateType(object cge.Object) {
-	if len(object.Comments) != 0 {
-		g.writer.WriteString("/*\n")
-		for _, comment := range object.Comments {
-			g.writer.WriteString(" * " + comment + "\n")
-		}
-		g.writer.WriteString(" */\n")
-	}
+	g.generateComments(object.Comments)
 	g.writer.WriteString(fmt.Sprintf("export interface %s {\n", snakeToPascal(object.Name)))
 
 	g.generateProperties(object.Properties, 1)
@@ -74,7 +66,17 @@ func (g *TypeScript) generateType(object cge.Object) {
 func (g *TypeScript) generateProperties(properties []cge.Property, indentSize int) {
 	indent := strings.Repeat("  ", indentSize)
 	for _, property := range properties {
-		g.writer.WriteString(fmt.Sprintf("%s%s: %s,\n", indent, snakeToPascal(property.Name), g.goType(property.Type.Type, property.Type.Lexeme, property.Type.Generic)))
+		g.writer.WriteString(fmt.Sprintf("%s%s: %s,\n", indent, property.Name, g.goType(property.Type.Type, property.Type.Lexeme, property.Type.Generic)))
+	}
+}
+
+func (g *TypeScript) generateComments(comments []string) {
+	if len(comments) != 0 {
+		g.writer.WriteString("/**\n")
+		for _, comment := range comments {
+			g.writer.WriteString(" * " + comment + "\n")
+		}
+		g.writer.WriteString(" */\n")
 	}
 }
 
