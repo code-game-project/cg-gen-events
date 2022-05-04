@@ -61,8 +61,8 @@ func (g *Go) generateEvent(object cge.Object) {
 	for _, comment := range object.Comments {
 		g.writer.WriteString("// " + comment + "\n")
 	}
-	g.writer.WriteString(fmt.Sprintf("const %s cg.EventName = \"%s\"\n\n", snakeToPascal(object.Name), object.Name))
-	g.writer.WriteString(fmt.Sprintf("type %sData struct {\n", snakeToPascal(object.Name)))
+	g.writer.WriteString(fmt.Sprintf("const Event%s cg.EventName = \"%s\"\n\n", snakeToPascal(object.Name), object.Name))
+	g.writer.WriteString(fmt.Sprintf("type Event%sData struct {\n", snakeToPascal(object.Name)))
 
 	g.generateProperties(object.Properties)
 
