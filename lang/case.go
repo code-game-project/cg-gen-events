@@ -32,7 +32,7 @@ func snakeToPascal(text string) string {
 }
 
 func snakeToKebab(text string) string {
-	return strings.ReplaceAll(text, "-", "")
+	return strings.ReplaceAll(text, "_", "-")
 }
 
 func snakeToOneWord(text string) string {
