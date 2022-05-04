@@ -30,8 +30,9 @@ func (o Object) String() string {
 }
 
 type Property struct {
-	Name string
-	Type Token
+	Comments []string
+	Name     string
+	Type     Token
 }
 
 func (o Property) String() string {
@@ -151,6 +152,11 @@ func (p *parser) block() ([]Property, error) {
 }
 
 func (p *parser) property() (Property, error) {
+	var comments []string
+	for p.match(COMMENT) {
+		comments = append(comments, p.previous().Lexeme)
+	}
+
 	if !p.match(IDENTIFIER) {
 		return Property{}, p.newError("Expect property name.")
 	}
@@ -190,8 +196,9 @@ func (p *parser) property() (Property, error) {
 	}
 
 	return Property{
-		Name: name.Lexeme,
-		Type: propertyType,
+		Comments: comments,
+		Name:     name.Lexeme,
+		Type:     propertyType,
 	}, nil
 }
 

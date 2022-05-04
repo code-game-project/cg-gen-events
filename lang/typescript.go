@@ -45,7 +45,7 @@ func (g *TypeScript) Generate(objects []cge.Object, gameName, dir string) error 
 }
 
 func (g *TypeScript) generateEvent(object cge.Object) {
-	g.generateComments(object.Comments)
+	g.generateComments("", object.Comments)
 	g.writer.WriteString(fmt.Sprintf("export interface %s {\n", snakeToPascal(object.Name)))
 	g.writer.WriteString(fmt.Sprintf("  name: \"%s\",\n  data: {\n", object.Name))
 
@@ -55,7 +55,7 @@ func (g *TypeScript) generateEvent(object cge.Object) {
 }
 
 func (g *TypeScript) generateType(object cge.Object) {
-	g.generateComments(object.Comments)
+	g.generateComments("", object.Comments)
 	g.writer.WriteString(fmt.Sprintf("export interface %s {\n", snakeToPascal(object.Name)))
 
 	g.generateProperties(object.Properties, 1)
@@ -66,17 +66,18 @@ func (g *TypeScript) generateType(object cge.Object) {
 func (g *TypeScript) generateProperties(properties []cge.Property, indentSize int) {
 	indent := strings.Repeat("  ", indentSize)
 	for _, property := range properties {
+		g.generateComments("    ", property.Comments)
 		g.writer.WriteString(fmt.Sprintf("%s%s: %s,\n", indent, property.Name, g.goType(property.Type.Type, property.Type.Lexeme, property.Type.Generic)))
 	}
 }
 
-func (g *TypeScript) generateComments(comments []string) {
+func (g *TypeScript) generateComments(prefix string, comments []string) {
 	if len(comments) != 0 {
-		g.writer.WriteString("/**\n")
+		g.writer.WriteString(prefix + "/**\n")
 		for _, comment := range comments {
-			g.writer.WriteString(" * " + comment + "\n")
+			g.writer.WriteString(prefix + " * " + comment + "\n")
 		}
-		g.writer.WriteString(" */\n")
+		g.writer.WriteString(prefix + " */\n")
 	}
 }
 
