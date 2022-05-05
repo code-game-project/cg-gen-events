@@ -1,4 +1,5 @@
 # cg-gen-events
+![CGE Version](https://img.shields.io/badge/CGE-v0.0.1-green)
 
 Easily generate [CodeGame](https://code-game-project.github.io/) [event definitions](https://code-game-project.github.io/docs/code-game-events-language-specification.html) for a variety of languages.
 
