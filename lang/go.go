@@ -80,7 +80,7 @@ func (g *Go) generateType(object cge.Object) {
 func (g *Go) generateProperties(properties []cge.Property) {
 	for _, property := range properties {
 		g.generateComments("\t", property.Comments)
-		g.writer.WriteString(fmt.Sprintf("\t%s %s `json:\"%s\"`\n", snakeToPascal(property.Name), g.goType(property.Type.Type, property.Type.Lexeme, property.Type.Generic), property.Name))
+		g.writer.WriteString(fmt.Sprintf("\t%s %s `json:\"%s\"`\n", snakeToPascal(property.Name), g.goType(property.Type.Token.Type, property.Type.Token.Lexeme, property.Type.Generic), property.Name))
 	}
 }
 
@@ -90,7 +90,7 @@ func (g *Go) generateComments(prefix string, comments []string) {
 	}
 }
 
-func (g *Go) goType(tokenType cge.TokenType, lexeme string, generic *cge.Generic) string {
+func (g *Go) goType(tokenType cge.TokenType, lexeme string, generic *cge.PropertyType) string {
 	switch tokenType {
 	case cge.STRING:
 		return "string"
@@ -108,9 +108,9 @@ func (g *Go) goType(tokenType cge.TokenType, lexeme string, generic *cge.Generic
 	case cge.FLOAT64:
 		return "float64"
 	case cge.LIST:
-		return "[]" + g.goType(generic.Type, generic.Lexeme, generic.Generic)
+		return "[]" + g.goType(generic.Token.Type, generic.Token.Lexeme, generic.Generic)
 	case cge.MAP:
-		return "map[string]" + g.goType(generic.Type, generic.Lexeme, generic.Generic)
+		return "map[string]" + g.goType(generic.Token.Type, generic.Token.Lexeme, generic.Generic)
 	case cge.IDENTIFIER:
 		return snakeToPascal(lexeme)
 	}

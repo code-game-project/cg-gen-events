@@ -23,6 +23,8 @@ const (
 	CLOSE_CURLY TokenType = "CLOSE_CURLY"
 	COLON       TokenType = "COLON"
 	COMMA       TokenType = "COMMA"
+	GREATER     TokenType = "GREATER"
+	LESS        TokenType = "LESS"
 
 	COMMENT TokenType = "COMMENT"
 
@@ -30,15 +32,8 @@ const (
 )
 
 type Token struct {
-	Type    TokenType
-	Lexeme  string
-	Line    int
-	Column  int
-	Generic *Generic
-}
-
-type Generic struct {
-	Type    TokenType
-	Lexeme  string
-	Generic *Generic
+	Type   TokenType
+	Lexeme string
+	Line   int
+	Column int
 }

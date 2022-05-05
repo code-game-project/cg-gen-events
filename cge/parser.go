@@ -32,11 +32,16 @@ func (o Object) String() string {
 type Property struct {
 	Comments []string
 	Name     string
-	Type     Token
+	Type     *PropertyType
+}
+
+type PropertyType struct {
+	Token   Token
+	Generic *PropertyType
 }
 
 func (o Property) String() string {
-	return fmt.Sprintf("%s: %s", o.Name, o.Type.Lexeme)
+	return fmt.Sprintf("%s: %s", o.Name, o.Type.Token.Lexeme)
 }
 
 type parser struct {
@@ -166,15 +171,29 @@ func (p *parser) property() (Property, error) {
 		return Property{}, p.newError("Expect ':' after property name.")
 	}
 
-	if !p.match(STRING, BOOL, INT32, INT64, BIGINT, FLOAT32, FLOAT64, MAP, LIST, IDENTIFIER) {
-		return Property{}, p.newError("Expect type after property name.")
+	propertyType, err := p.propertyType()
+	if err != nil {
+		return Property{}, err
 	}
+
+	return Property{
+		Comments: comments,
+		Name:     name.Lexeme,
+		Type:     propertyType,
+	}, nil
+}
+
+func (p *parser) propertyType() (*PropertyType, error) {
+	if !p.match(STRING, BOOL, INT32, INT64, BIGINT, FLOAT32, FLOAT64, MAP, LIST, IDENTIFIER) {
+		return &PropertyType{}, p.newError("Expect type after property name.")
+	}
+
 	propertyType := p.previous()
 
 	if propertyType.Type == IDENTIFIER {
 		if p.peek().Type == OPEN_CURLY {
 			if _, ok := p.identifiers[propertyType.Lexeme]; ok {
-				return Property{}, p.newErrorAt(fmt.Sprintf("'%s' already defined.", name.Lexeme), name)
+				return &PropertyType{}, p.newErrorAt(fmt.Sprintf("'%s' already defined.", propertyType.Lexeme), propertyType)
 			}
 			p.identifiers[propertyType.Lexeme] = struct{}{}
 
@@ -182,7 +201,7 @@ func (p *parser) property() (Property, error) {
 
 			properties, err := p.block()
 			if err != nil {
-				return Property{}, err
+				return &PropertyType{}, err
 			}
 
 			p.objects = append(p.objects, Object{
@@ -195,10 +214,26 @@ func (p *parser) property() (Property, error) {
 		}
 	}
 
-	return Property{
-		Comments: comments,
-		Name:     name.Lexeme,
-		Type:     propertyType,
+	var generic *PropertyType
+	if propertyType.Type == MAP || propertyType.Type == LIST {
+		if !p.match(LESS) {
+			return &PropertyType{}, p.newError("Expect generic.")
+		}
+
+		var err error
+		generic, err = p.propertyType()
+		if err != nil {
+			return &PropertyType{}, err
+		}
+
+		if !p.match(GREATER) {
+			return &PropertyType{}, p.newError("Expect '>' after generic value.")
+		}
+	}
+
+	return &PropertyType{
+		Token:   propertyType,
+		Generic: generic,
 	}, nil
 }
 

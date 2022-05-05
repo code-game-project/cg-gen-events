@@ -4,6 +4,7 @@ cge -> (event|type)*
 event -> 'event' IDENTIFIER block
 type -> 'type' IDENTIFIER block
 block -> '{' property? (',' property)* '}'
-property -> IDENTIFIER ':' (IDENTIFIER|inlineType|generic)
+property -> IDENTIFIER ':' type
+type -> IDENTIFIER | inlineType | generic
 inlineType -> IDENTIFIER block
-generic -> ('list'|'map') '<' IDENTIFIER '>'
+generic -> ('list'|'map') '<' type '>'

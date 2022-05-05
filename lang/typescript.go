@@ -67,7 +67,7 @@ func (g *TypeScript) generateProperties(properties []cge.Property, indentSize in
 	indent := strings.Repeat("  ", indentSize)
 	for _, property := range properties {
 		g.generateComments("    ", property.Comments)
-		g.writer.WriteString(fmt.Sprintf("%s%s: %s,\n", indent, property.Name, g.goType(property.Type.Type, property.Type.Lexeme, property.Type.Generic)))
+		g.writer.WriteString(fmt.Sprintf("%s%s: %s,\n", indent, property.Name, g.goType(property.Type.Token.Type, property.Type.Token.Lexeme, property.Type.Generic)))
 	}
 }
 
@@ -81,7 +81,7 @@ func (g *TypeScript) generateComments(prefix string, comments []string) {
 	}
 }
 
-func (g *TypeScript) goType(tokenType cge.TokenType, lexeme string, generic *cge.Generic) string {
+func (g *TypeScript) goType(tokenType cge.TokenType, lexeme string, generic *cge.PropertyType) string {
 	switch tokenType {
 	case cge.STRING:
 		return "string"
@@ -98,9 +98,9 @@ func (g *TypeScript) goType(tokenType cge.TokenType, lexeme string, generic *cge
 	case cge.FLOAT64:
 		return "number"
 	case cge.LIST:
-		return g.goType(generic.Type, generic.Lexeme, generic.Generic) + "[]"
+		return g.goType(generic.Token.Type, generic.Token.Lexeme, generic.Generic) + "[]"
 	case cge.MAP:
-		return "{ [index: string]: " + g.goType(generic.Type, generic.Lexeme, generic.Generic) + " }"
+		return "{ [index: string]: " + g.goType(generic.Token.Type, generic.Token.Lexeme, generic.Generic) + " }"
 	case cge.IDENTIFIER:
 		return snakeToPascal(lexeme)
 	}

@@ -38,9 +38,9 @@ func (s *scanner) scan() error {
 	for c != '\000' {
 		switch c {
 		case '{':
-			s.addToken(OPEN_CURLY, nil)
+			s.addToken(OPEN_CURLY)
 		case '}':
-			s.addToken(CLOSE_CURLY, nil)
+			s.addToken(CLOSE_CURLY)
 		case '/':
 			if s.match('/') {
 				s.comment()
@@ -51,9 +51,13 @@ func (s *scanner) scan() error {
 				}
 			}
 		case ':':
-			s.addToken(COLON, nil)
+			s.addToken(COLON)
 		case ',':
-			s.addToken(COMMA, nil)
+			s.addToken(COMMA)
+		case '<':
+			s.addToken(LESS)
+		case '>':
+			s.addToken(GREATER)
 		case ' ', '\t':
 			break
 
@@ -95,125 +99,32 @@ func (s *scanner) identifier() error {
 
 	switch name {
 	case "event":
-		s.addToken(EVENT, nil)
+		s.addToken(EVENT)
 	case "type":
-		s.addToken(TYPE, nil)
+		s.addToken(TYPE)
 	case "string":
-		s.addToken(STRING, nil)
+		s.addToken(STRING)
 	case "bool":
-		s.addToken(BOOL, nil)
+		s.addToken(BOOL)
 	case "int", "int32":
-		s.addToken(INT32, nil)
+		s.addToken(INT32)
 	case "int64":
-		s.addToken(INT64, nil)
+		s.addToken(INT64)
 	case "bigint":
-		s.addToken(BIGINT, nil)
+		s.addToken(BIGINT)
 	case "float", "float32":
-		s.addToken(FLOAT32, nil)
+		s.addToken(FLOAT32)
 	case "float64":
-		s.addToken(FLOAT64, nil)
+		s.addToken(FLOAT64)
 	case "list":
-		generic, err := s.generic()
-		if err != nil {
-			return err
-		}
-		s.addToken(LIST, generic)
+		s.addToken(LIST)
 	case "map":
-		generic, err := s.generic()
-		if err != nil {
-			return err
-		}
-		s.addToken(MAP, generic)
+		s.addToken(MAP)
 	default:
-		s.addToken(IDENTIFIER, nil)
+		s.addToken(IDENTIFIER)
 	}
 
 	return nil
-}
-
-func (s *scanner) generic() (*Generic, error) {
-	if r, _ := s.nextCharacter(); r != '<' {
-		return nil, s.newError("Expected '<' at beginning of generic.")
-	}
-
-	startColumn := s.currentColumn + 1
-
-	for isLowerAlphaNum(s.peek()) {
-		s.nextCharacter()
-	}
-
-	name := string(s.lines[s.line][startColumn : s.currentColumn+1])
-
-	var generic *Generic
-
-	switch name {
-	case "string":
-		generic = &Generic{
-			Type:   STRING,
-			Lexeme: name,
-		}
-	case "bool":
-		generic = &Generic{
-			Type:   BOOL,
-			Lexeme: name,
-		}
-	case "int", "int32":
-		generic = &Generic{
-			Type:   INT32,
-			Lexeme: name,
-		}
-	case "int64":
-		generic = &Generic{
-			Type:   INT64,
-			Lexeme: name,
-		}
-	case "bigint":
-		generic = &Generic{
-			Type:   BIGINT,
-			Lexeme: name,
-		}
-	case "float32":
-		generic = &Generic{
-			Type:   FLOAT32,
-			Lexeme: name,
-		}
-	case "float", "float64":
-		generic = &Generic{
-			Type:   FLOAT64,
-			Lexeme: name,
-		}
-	case "list":
-		g, err := s.generic()
-		if err != nil {
-			return nil, err
-		}
-		generic = &Generic{
-			Type:    LIST,
-			Lexeme:  name,
-			Generic: g,
-		}
-	case "map":
-		g, err := s.generic()
-		if err != nil {
-			return nil, err
-		}
-		generic = &Generic{
-			Type:    MAP,
-			Lexeme:  name,
-			Generic: g,
-		}
-	default:
-		generic = &Generic{
-			Type:   IDENTIFIER,
-			Lexeme: name,
-		}
-	}
-
-	if r, _ := s.nextCharacter(); r != '>' {
-		return nil, s.newError("Expected '>' at end of generic.")
-	}
-
-	return generic, nil
 }
 
 func (s *scanner) comment() {
@@ -322,13 +233,12 @@ func (s *scanner) nextLine() (bool, error) {
 	return true, nil
 }
 
-func (s *scanner) addToken(tokenType TokenType, generic *Generic) {
+func (s *scanner) addToken(tokenType TokenType) {
 	s.tokens = append(s.tokens, Token{
-		Line:    s.line,
-		Column:  s.tokenStartColumn,
-		Type:    tokenType,
-		Lexeme:  string(s.lines[s.line][s.tokenStartColumn : s.currentColumn+1]),
-		Generic: generic,
+		Line:   s.line,
+		Column: s.tokenStartColumn,
+		Type:   tokenType,
+		Lexeme: string(s.lines[s.line][s.tokenStartColumn : s.currentColumn+1]),
 	})
 }
 
