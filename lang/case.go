@@ -38,3 +38,9 @@ func snakeToKebab(text string) string {
 func snakeToOneWord(text string) string {
 	return strings.ReplaceAll(text, "_", "")
 }
+
+func snakeToTitle(text string) string {
+	text = strings.ReplaceAll(text, "_", " ")
+	text = strings.Title(text)
+	return text
+}

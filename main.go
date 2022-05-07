@@ -16,6 +16,9 @@ var availableGenerators = map[string]lang.Generator{
 	"golang":     &lang.Go{},
 	"ts":         &lang.TypeScript{},
 	"typescript": &lang.TypeScript{},
+	"md":         &lang.MarkdownDocs{},
+	"markdown":   &lang.MarkdownDocs{},
+	"docs":       &lang.MarkdownDocs{},
 }
 
 func main() {

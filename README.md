@@ -15,6 +15,7 @@ Use `--help` for a list of available options.
 
 - Go
 - TypeScript
+- Markdown docs
 
 ## License
 
