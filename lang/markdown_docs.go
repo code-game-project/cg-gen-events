@@ -46,7 +46,7 @@ func (m *MarkdownDocs) generateEvent(object cge.Object) {
 		m.eventTextBuilder.WriteString("## Events\n")
 	}
 	m.eventTextBuilder.WriteString("\n")
-	m.eventTextBuilder.WriteString(fmt.Sprintf("### %s\n", object.Name))
+	m.eventTextBuilder.WriteString(fmt.Sprintf("### %s\n\n", object.Name))
 
 	for _, comment := range object.Comments {
 		m.eventTextBuilder.WriteString(comment + "\n")
@@ -60,7 +60,7 @@ func (m *MarkdownDocs) generateType(object cge.Object) {
 		m.typeTextBuilder.WriteString("## Types\n")
 	}
 	m.typeTextBuilder.WriteString("\n")
-	m.typeTextBuilder.WriteString(fmt.Sprintf("### %s\n", object.Name))
+	m.typeTextBuilder.WriteString(fmt.Sprintf("### %s\n\n", object.Name))
 
 	for _, comment := range object.Comments {
 		m.typeTextBuilder.WriteString(comment + "\n")
@@ -101,9 +101,9 @@ func (m *MarkdownDocs) mdType(tokenType cge.TokenType, lexeme string, generic *c
 	case cge.FLOAT64:
 		return "float64"
 	case cge.LIST:
-		return "list<" + m.mdType(generic.Token.Type, generic.Token.Lexeme, generic.Generic) + ">"
+		return "list\\<" + m.mdType(generic.Token.Type, generic.Token.Lexeme, generic.Generic) + "\\>"
 	case cge.MAP:
-		return "map<" + m.mdType(generic.Token.Type, generic.Token.Lexeme, generic.Generic) + ">"
+		return "map\\<" + m.mdType(generic.Token.Type, generic.Token.Lexeme, generic.Generic) + "\\>"
 	case cge.IDENTIFIER:
 		return fmt.Sprintf("[%s](#%s)", lexeme, lexeme)
 	}
