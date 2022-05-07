@@ -1,8 +1,6 @@
 package lang
 
 import (
-	"bufio"
-	"bytes"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -12,8 +10,7 @@ import (
 )
 
 type TypeScript struct {
-	buffer *bytes.Buffer
-	writer *bufio.Writer
+	builder strings.Builder
 }
 
 func (g *TypeScript) Generate(objects []cge.Object, gameName, dir string) error {
@@ -21,10 +18,9 @@ func (g *TypeScript) Generate(objects []cge.Object, gameName, dir string) error 
 	if err != nil {
 		return err
 	}
+	defer file.Close()
 
-	g.buffer = new(bytes.Buffer)
-
-	g.writer = bufio.NewWriter(g.buffer)
+	g.builder = strings.Builder{}
 
 	for _, object := range objects {
 		if object.Type == cge.EVENT {
@@ -32,52 +28,48 @@ func (g *TypeScript) Generate(objects []cge.Object, gameName, dir string) error 
 		} else {
 			g.generateType(object)
 		}
-		g.writer.WriteString("\n")
+		g.builder.WriteString("\n")
 	}
 
-	g.writer.Flush()
-
-	file.Write(g.buffer.Bytes())
-
-	file.Close()
+	file.WriteString(g.builder.String())
 
 	return nil
 }
 
 func (g *TypeScript) generateEvent(object cge.Object) {
 	g.generateComments("", object.Comments)
-	g.writer.WriteString(fmt.Sprintf("export interface %s {\n", snakeToPascal(object.Name)))
-	g.writer.WriteString(fmt.Sprintf("  name: \"%s\",\n  data: {\n", object.Name))
+	g.builder.WriteString(fmt.Sprintf("export interface %s {\n", snakeToPascal(object.Name)))
+	g.builder.WriteString(fmt.Sprintf("  name: \"%s\",\n  data: {\n", object.Name))
 
 	g.generateProperties(object.Properties, 2)
 
-	g.writer.WriteString("  }\n}\n")
+	g.builder.WriteString("  }\n}\n")
 }
 
 func (g *TypeScript) generateType(object cge.Object) {
 	g.generateComments("", object.Comments)
-	g.writer.WriteString(fmt.Sprintf("export interface %s {\n", snakeToPascal(object.Name)))
+	g.builder.WriteString(fmt.Sprintf("export interface %s {\n", snakeToPascal(object.Name)))
 
 	g.generateProperties(object.Properties, 1)
 
-	g.writer.WriteString("}\n")
+	g.builder.WriteString("}\n")
 }
 
 func (g *TypeScript) generateProperties(properties []cge.Property, indentSize int) {
 	indent := strings.Repeat("  ", indentSize)
 	for _, property := range properties {
 		g.generateComments("    ", property.Comments)
-		g.writer.WriteString(fmt.Sprintf("%s%s: %s,\n", indent, property.Name, g.goType(property.Type.Token.Type, property.Type.Token.Lexeme, property.Type.Generic)))
+		g.builder.WriteString(fmt.Sprintf("%s%s: %s,\n", indent, property.Name, g.goType(property.Type.Token.Type, property.Type.Token.Lexeme, property.Type.Generic)))
 	}
 }
 
 func (g *TypeScript) generateComments(prefix string, comments []string) {
 	if len(comments) != 0 {
-		g.writer.WriteString(prefix + "/**\n")
+		g.builder.WriteString(prefix + "/**\n")
 		for _, comment := range comments {
-			g.writer.WriteString(prefix + " * " + comment + "\n")
+			g.builder.WriteString(prefix + " * " + comment + "\n")
 		}
-		g.writer.WriteString(prefix + " */\n")
+		g.builder.WriteString(prefix + " */\n")
 	}
 }
 

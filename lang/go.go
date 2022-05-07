@@ -1,19 +1,17 @@
 package lang
 
 import (
-	"bufio"
-	"bytes"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/code-game-project/cg-gen-events/cge"
 )
 
 type Go struct {
-	buffer *bytes.Buffer
-	writer *bufio.Writer
+	builder strings.Builder
 
 	needsMathBig bool
 }
@@ -24,9 +22,7 @@ func (g *Go) Generate(objects []cge.Object, gameName, dir string) error {
 		return err
 	}
 
-	g.buffer = new(bytes.Buffer)
-
-	g.writer = bufio.NewWriter(g.buffer)
+	g.builder = strings.Builder{}
 
 	for _, object := range objects {
 		if object.Type == cge.EVENT {
@@ -36,8 +32,6 @@ func (g *Go) Generate(objects []cge.Object, gameName, dir string) error {
 		}
 	}
 
-	g.writer.Flush()
-
 	file.WriteString(fmt.Sprintf("package %s\n\n", snakeToOneWord(gameName)))
 	file.WriteString("import \"github.com/code-game-project/go-client/cg\"\n")
 
@@ -45,7 +39,7 @@ func (g *Go) Generate(objects []cge.Object, gameName, dir string) error {
 		file.WriteString("import \"math/big\"\n")
 	}
 
-	file.Write(g.buffer.Bytes())
+	file.WriteString(g.builder.String())
 
 	file.Close()
 
@@ -57,36 +51,36 @@ func (g *Go) Generate(objects []cge.Object, gameName, dir string) error {
 }
 
 func (g *Go) generateEvent(object cge.Object) {
-	g.writer.WriteString("\n")
+	g.builder.WriteString("\n")
 	g.generateComments("", object.Comments)
-	g.writer.WriteString(fmt.Sprintf("const Event%s cg.EventName = \"%s\"\n\n", snakeToPascal(object.Name), object.Name))
-	g.writer.WriteString(fmt.Sprintf("type Event%sData struct {\n", snakeToPascal(object.Name)))
+	g.builder.WriteString(fmt.Sprintf("const Event%s cg.EventName = \"%s\"\n\n", snakeToPascal(object.Name), object.Name))
+	g.builder.WriteString(fmt.Sprintf("type Event%sData struct {\n", snakeToPascal(object.Name)))
 
 	g.generateProperties(object.Properties)
 
-	g.writer.WriteString("}\n")
+	g.builder.WriteString("}\n")
 }
 
 func (g *Go) generateType(object cge.Object) {
-	g.writer.WriteString("\n")
+	g.builder.WriteString("\n")
 	g.generateComments("", object.Comments)
-	g.writer.WriteString(fmt.Sprintf("type %s struct {\n", snakeToPascal(object.Name)))
+	g.builder.WriteString(fmt.Sprintf("type %s struct {\n", snakeToPascal(object.Name)))
 
 	g.generateProperties(object.Properties)
 
-	g.writer.WriteString("}\n")
+	g.builder.WriteString("}\n")
 }
 
 func (g *Go) generateProperties(properties []cge.Property) {
 	for _, property := range properties {
 		g.generateComments("\t", property.Comments)
-		g.writer.WriteString(fmt.Sprintf("\t%s %s `json:\"%s\"`\n", snakeToPascal(property.Name), g.goType(property.Type.Token.Type, property.Type.Token.Lexeme, property.Type.Generic), property.Name))
+		g.builder.WriteString(fmt.Sprintf("\t%s %s `json:\"%s\"`\n", snakeToPascal(property.Name), g.goType(property.Type.Token.Type, property.Type.Token.Lexeme, property.Type.Generic), property.Name))
 	}
 }
 
 func (g *Go) generateComments(prefix string, comments []string) {
 	for _, comment := range comments {
-		g.writer.WriteString(prefix + "// " + comment + "\n")
+		g.builder.WriteString(prefix + "// " + comment + "\n")
 	}
 }
 
