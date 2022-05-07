@@ -77,10 +77,10 @@ func (m *MarkdownDocs) generateProperties(builder *strings.Builder, properties [
 
 	builder.WriteString("\nProperties:\n")
 	builder.WriteString("| Name | Type | Description |\n")
-	builder.WriteString("|------|------|-------------|\n")
+	builder.WriteString("| ---- | ---- | ----------- |\n")
 
 	for _, property := range properties {
-		builder.WriteString(fmt.Sprintf("|%s|%s|%s|\n", property.Name, m.mdType(property.Type.Token.Type, property.Type.Token.Lexeme, property.Type.Generic), strings.Join(property.Comments, " ")))
+		builder.WriteString(fmt.Sprintf("| %s | %s | %s |\n", property.Name, m.mdType(property.Type.Token.Type, property.Type.Token.Lexeme, property.Type.Generic), strings.Join(property.Comments, " ")))
 	}
 }
 
