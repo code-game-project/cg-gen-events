@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/code-game-project/cg-gen-events/cge"
@@ -13,12 +12,8 @@ import (
 
 var availableGenerators = map[string]lang.Generator{
 	"go":         &lang.Go{},
-	"golang":     &lang.Go{},
-	"ts":         &lang.TypeScript{},
 	"typescript": &lang.TypeScript{},
-	"md":         &lang.MarkdownDocs{},
 	"markdown":   &lang.MarkdownDocs{},
-	"docs":       &lang.MarkdownDocs{},
 }
 
 func main() {
@@ -71,15 +66,7 @@ func main() {
 	}
 	defer inputFile.Close()
 
-	_, fileName := filepath.Split(flag.Arg(0))
-	name := strings.ToLower(strings.TrimSuffix(fileName, filepath.Ext(fileName)))
-
-	if !lang.IsSnakeCaseIdentifier(name) {
-		fmt.Fprintf(os.Stderr, "Invalid game name '%s'. Names must be snake_case and only include alpha numeric characters.", name)
-		os.Exit(1)
-	}
-
-	objects, errs := cge.Parse(inputFile)
+	metadata, objects, errs := cge.Parse(inputFile)
 	if len(errs) > 0 {
 		for _, e := range errs {
 			fmt.Fprintln(os.Stderr, e)
@@ -88,7 +75,7 @@ func main() {
 	}
 
 	for i, g := range generators {
-		err = g.Generate(objects, name, output)
+		err = g.Generate(metadata, objects, output)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Failed to generate %s events: %s\n", generatorNames[i], err)
 		}

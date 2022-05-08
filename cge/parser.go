@@ -6,6 +6,12 @@ import (
 	"strings"
 )
 
+type Metadata struct {
+	Name     string
+	Comments []string
+	Version  string
+}
+
 type ObjectType string
 
 type Object struct {
@@ -54,10 +60,10 @@ type parser struct {
 	errors              []error
 }
 
-func Parse(source io.Reader) ([]Object, []error) {
+func Parse(source io.Reader) (Metadata, []Object, []error) {
 	tokens, lines, err := scan(source)
 	if err != nil {
-		return nil, []error{err}
+		return Metadata{}, nil, []error{err}
 	}
 
 	parser := &parser{
@@ -72,7 +78,16 @@ func Parse(source io.Reader) ([]Object, []error) {
 	return parser.parse()
 }
 
-func (p *parser) parse() ([]Object, []error) {
+func (p *parser) parse() (Metadata, []Object, []error) {
+	name, comments, err := p.name()
+	if err != nil {
+		return Metadata{}, nil, []error{err}
+	}
+	version, err := p.version()
+	if err != nil {
+		return Metadata{}, nil, []error{err}
+	}
+
 	for p.peek().Type != EOF {
 		decl, err := p.declaration()
 		if err != nil {
@@ -89,7 +104,40 @@ func (p *parser) parse() ([]Object, []error) {
 		}
 	}
 
-	return p.objects, p.errors
+	return Metadata{
+		Name:     name,
+		Comments: comments,
+		Version:  version,
+	}, p.objects, p.errors
+}
+
+func (p *parser) name() (string, []string, error) {
+	var comments []string
+	for p.match(COMMENT) {
+		comments = append(comments, p.previous().Lexeme)
+	}
+
+	if !p.match(NAME) {
+		return "", nil, p.newError("Expect 'name' token.")
+	}
+
+	if !p.match(IDENTIFIER) {
+		return "", nil, p.newError("Expect name of game.")
+	}
+
+	return p.previous().Lexeme, comments, nil
+}
+
+func (p *parser) version() (string, error) {
+	if !p.match(VERSION) {
+		return "", p.newError("Expect 'version' token.")
+	}
+
+	if !p.match(VERSION_NUMBER) {
+		return "", p.newError("Expect version of the game.")
+	}
+
+	return p.previous().Lexeme, nil
 }
 
 func (p *parser) declaration() (Object, error) {

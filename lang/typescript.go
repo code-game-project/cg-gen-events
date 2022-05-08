@@ -13,14 +13,24 @@ type TypeScript struct {
 	builder strings.Builder
 }
 
-func (g *TypeScript) Generate(objects []cge.Object, gameName, dir string) error {
-	file, err := os.Create(filepath.Join(dir, snakeToKebab(gameName)+"-events.d.ts"))
+func (g *TypeScript) Generate(metadata cge.Metadata, objects []cge.Object, dir string) error {
+	file, err := os.Create(filepath.Join(dir, snakeToKebab(metadata.Name)+"-events.d.ts"))
 	if err != nil {
 		return err
 	}
 	defer file.Close()
 
 	g.builder = strings.Builder{}
+
+	g.builder.WriteString("/**\n")
+	g.builder.WriteString(fmt.Sprintf(" * %s v%s\n", snakeToTitle(metadata.Name), metadata.Version))
+	if len(metadata.Comments) > 0 {
+		g.builder.WriteString("\n")
+	}
+	for _, comment := range metadata.Comments {
+		g.builder.WriteString(" * " + comment + "\n")
+	}
+	g.builder.WriteString(" */\n\n")
 
 	for _, object := range objects {
 		if object.Type == cge.EVENT {

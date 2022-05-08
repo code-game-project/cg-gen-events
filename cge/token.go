@@ -3,8 +3,10 @@ package cge
 type TokenType string
 
 const (
-	EVENT TokenType = "EVENT"
-	TYPE  TokenType = "TYPE"
+	NAME    TokenType = "NAME"
+	VERSION TokenType = "VERSION"
+	EVENT   TokenType = "EVENT"
+	TYPE    TokenType = "TYPE"
 
 	STRING  TokenType = "STRING"
 	BOOL    TokenType = "BOOL"
@@ -17,7 +19,8 @@ const (
 	MAP  TokenType = "MAP"
 	LIST TokenType = "LIST"
 
-	IDENTIFIER TokenType = "IDENTIFIER"
+	IDENTIFIER     TokenType = "IDENTIFIER"
+	VERSION_NUMBER TokenType = "VERSION_NUMBER"
 
 	OPEN_CURLY  TokenType = "OPEN_CURLY"
 	CLOSE_CURLY TokenType = "CLOSE_CURLY"

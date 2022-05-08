@@ -14,7 +14,7 @@ type MarkdownDocs struct {
 	typeTextBuilder  strings.Builder
 }
 
-func (m *MarkdownDocs) Generate(objects []cge.Object, gameName, dir string) error {
+func (m *MarkdownDocs) Generate(metadata cge.Metadata, objects []cge.Object, dir string) error {
 	file, err := os.Create(filepath.Join(dir, "event_docs.md"))
 	if err != nil {
 		return err
@@ -28,7 +28,15 @@ func (m *MarkdownDocs) Generate(objects []cge.Object, gameName, dir string) erro
 		}
 	}
 
-	file.WriteString(fmt.Sprintf("# %s Events\n\n", snakeToTitle(gameName)))
+	file.WriteString(fmt.Sprintf("# %s Events v%s\n\n", snakeToTitle(metadata.Name), metadata.Version))
+
+	for _, c := range metadata.Comments {
+		file.WriteString(c + "\n")
+	}
+
+	if len(metadata.Comments) > 0 {
+		file.WriteString("\n")
+	}
 
 	file.WriteString(m.eventTextBuilder.String())
 

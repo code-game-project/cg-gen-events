@@ -63,7 +63,15 @@ func (s *scanner) scan() error {
 
 		default:
 			if isLowerAlpha(c) {
-				s.identifier()
+				err := s.identifier()
+				if err != nil {
+					return err
+				}
+			} else if isDigit(c) {
+				err := s.versionNumber()
+				if err != nil {
+					return err
+				}
 			} else {
 				return s.newError(fmt.Sprintf("Unexpected character '%c'.", c))
 			}
@@ -98,6 +106,10 @@ func (s *scanner) identifier() error {
 	name := string(s.lines[s.line][s.tokenStartColumn : s.currentColumn+1])
 
 	switch name {
+	case "name":
+		s.addToken(NAME)
+	case "version":
+		s.addToken(VERSION)
 	case "event":
 		s.addToken(EVENT)
 	case "type":
@@ -124,6 +136,35 @@ func (s *scanner) identifier() error {
 		s.addToken(IDENTIFIER)
 	}
 
+	return nil
+}
+
+func (s *scanner) versionNumber() error {
+	for isDigit(s.peek()) {
+		s.nextCharacter()
+	}
+
+	if s.peek() == '.' {
+		s.nextCharacter()
+		if !isDigit(s.peek()) {
+			return s.newError("Expect digit after '.'.")
+		}
+		for isDigit(s.peek()) {
+			s.nextCharacter()
+		}
+
+		if s.peek() == '.' {
+			s.nextCharacter()
+			if !isDigit(s.peek()) {
+				return s.newError("Expect digit after '.'.")
+			}
+			for isDigit(s.peek()) {
+				s.nextCharacter()
+			}
+		}
+	}
+
+	s.addToken(VERSION_NUMBER)
 	return nil
 }
 
