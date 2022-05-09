@@ -52,6 +52,11 @@ func main() {
 	flag.Parse()
 	languages = strings.ToLower(languages)
 
+	if flag.NArg() != 1 {
+		flag.Usage()
+		os.Exit(1)
+	}
+
 	var input io.ReadCloser
 	var err error
 	if strings.HasPrefix(flag.Arg(0), "http://") || strings.HasPrefix(flag.Arg(0), "https://") {
@@ -85,11 +90,6 @@ func main() {
 			os.Exit(1)
 		}
 		defer input.Close()
-	}
-
-	if flag.NArg() != 1 {
-		flag.Usage()
-		os.Exit(1)
 	}
 
 	err = os.Mkdir(output, 0755)
