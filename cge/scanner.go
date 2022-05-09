@@ -8,7 +8,7 @@ import (
 )
 
 type scanner struct {
-	fileScanner      *bufio.Scanner
+	inputScanner     *bufio.Scanner
 	lines            [][]rune
 	line             int
 	tokenStartColumn int
@@ -20,8 +20,8 @@ func scan(source io.Reader) ([]Token, [][]rune, error) {
 	fileScanner := bufio.NewScanner(source)
 
 	srcScanner := &scanner{
-		fileScanner: fileScanner,
-		line:        -1,
+		inputScanner: fileScanner,
+		line:         -1,
 	}
 
 	err := srcScanner.scan()
@@ -263,10 +263,10 @@ func (s *scanner) match(char rune) bool {
 }
 
 func (s *scanner) nextLine() (bool, error) {
-	if !s.fileScanner.Scan() {
-		return false, s.fileScanner.Err()
+	if !s.inputScanner.Scan() {
+		return false, s.inputScanner.Err()
 	}
-	s.lines = append(s.lines, []rune(s.fileScanner.Text()))
+	s.lines = append(s.lines, []rune(s.inputScanner.Text()))
 	s.line++
 	s.currentColumn = 0
 	s.tokenStartColumn = 0

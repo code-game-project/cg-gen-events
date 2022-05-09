@@ -3,6 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 	"strings"
 
@@ -50,12 +52,47 @@ func main() {
 	flag.Parse()
 	languages = strings.ToLower(languages)
 
+	var input io.ReadCloser
+	var err error
+	if strings.HasPrefix(flag.Arg(0), "http://") || strings.HasPrefix(flag.Arg(0), "https://") {
+		url := flag.Arg(0)
+		if !strings.HasSuffix(url, "/events") {
+			if strings.HasSuffix(url, "/") {
+				url = url + "events"
+			} else {
+				url = url + "/events"
+			}
+		}
+		resp, err := http.Get(url)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Failed to reach url '%s': %s\n", url, err)
+			os.Exit(1)
+		}
+		if resp.StatusCode != http.StatusOK {
+			fmt.Fprintf(os.Stderr, "Failed to download CGE file from url '%s': %s\n", url, resp.Status)
+			os.Exit(1)
+		}
+		if resp.Header.Get("Content-Type") != "text/plain" {
+			fmt.Fprintf(os.Stderr, "Unsupported content type at '%s': expected %s, got %s\n", url, "text/plain", resp.Header.Get("Content-Type"))
+			os.Exit(1)
+		}
+		defer resp.Body.Close()
+		input = resp.Body
+	} else {
+		input, err = os.Open(flag.Arg(0))
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Failed to open input file: %s\n", err)
+			os.Exit(1)
+		}
+		defer input.Close()
+	}
+
 	if flag.NArg() != 1 {
 		flag.Usage()
 		os.Exit(1)
 	}
 
-	err := os.Mkdir(output, 0755)
+	err = os.Mkdir(output, 0755)
 	if err != nil && !os.IsExist(err) {
 		fmt.Fprintf(os.Stderr, "Failed to create output directory: %s\n", err)
 		os.Exit(1)
@@ -100,14 +137,7 @@ func main() {
 		}
 	}
 
-	inputFile, err := os.Open(flag.Arg(0))
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to open input file: %s\n", err)
-		os.Exit(1)
-	}
-	defer inputFile.Close()
-
-	metadata, objects, errs := cge.Parse(inputFile)
+	metadata, objects, errs := cge.Parse(input)
 	if len(errs) > 0 {
 		for _, e := range errs {
 			fmt.Fprintln(os.Stderr, e)
