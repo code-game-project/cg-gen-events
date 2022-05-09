@@ -5,11 +5,29 @@ Easily generate [CodeGame](https://github.com/code-game-project) event definitio
 
 ## Usage
 
+Generate from a local file:
 ```sh
 cg-gen-events my_game.cge
 ```
 
-Use `--help` for a list of available options.
+Generate from a remote file:
+```sh
+cg-gen-events https://example.com
+# same as
+cg-gen-events https://example.com/events
+```
+
+Specify an output directory:
+```sh
+cg-gen-events -output events/ my_game.cge
+```
+
+Specify a list of languages as command line arguments instead of the interactive menu:
+```sh
+cg-gen-events -languages go,typescript my_game.cge
+```
+
+Use `-help` for a complete list of available options.
 
 ## Supported languages
 
