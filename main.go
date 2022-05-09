@@ -6,19 +6,38 @@ import (
 	"os"
 	"strings"
 
+	"github.com/AlecAivazis/survey/v2"
 	"github.com/code-game-project/cg-gen-events/cge"
 	"github.com/code-game-project/cg-gen-events/lang"
 )
 
-var availableGenerators = map[string]lang.Generator{
-	"go":         &lang.Go{},
-	"typescript": &lang.TypeScript{},
-	"markdown":   &lang.MarkdownDocs{},
+type generator struct {
+	displayName string
+	names       []string
+	generator   lang.Generator
+}
+
+var availableGenerators = []generator{
+	{
+		displayName: "Go",
+		names:       []string{"go", "golang"},
+		generator:   &lang.Go{},
+	},
+	{
+		displayName: "TypeScript",
+		names:       []string{"ts", "typescript"},
+		generator:   &lang.TypeScript{},
+	},
+	{
+		displayName: "Markdown docs",
+		names:       []string{"markdown", "md", "docs"},
+		generator:   &lang.MarkdownDocs{},
+	},
 }
 
 func main() {
 	var languages string
-	flag.StringVar(&languages, "languages", "all", "A comma separated list of target languages.")
+	flag.StringVar(&languages, "languages", "", "A comma separated list of target languages (e.g. go,typescript or all for all supported languages).")
 
 	var output string
 	flag.StringVar(&output, "output", ".", "The directory where every generated file will be put into. (Will be created if it does not exist.)")
@@ -29,6 +48,7 @@ func main() {
 		flag.PrintDefaults()
 	}
 	flag.Parse()
+	languages = strings.ToLower(languages)
 
 	if flag.NArg() != 1 {
 		flag.Usage()
@@ -41,21 +61,42 @@ func main() {
 		os.Exit(1)
 	}
 
-	generatorNames := strings.Split(strings.ToLower(languages), ",")
+	useGenerator := make([]bool, len(availableGenerators))
 
-	generators := make([]lang.Generator, 0, len(generatorNames))
-	if strings.ToLower(languages) == "all" {
-		for _, generator := range availableGenerators {
-			generators = append(generators, generator)
+	for languages == "" {
+		names := make([]string, len(availableGenerators)+1)
+		for i, g := range availableGenerators {
+			names[i] = g.displayName
+		}
+		names[len(names)-1] = "All"
+		var index int
+		survey.AskOne(&survey.Select{
+			Message: "Select the output language: ",
+			Options: names,
+		}, &index, survey.WithValidator(survey.Required))
+		if index == len(names)-1 {
+			languages = "all"
+		} else {
+			languages = availableGenerators[index].names[0]
+		}
+	}
+
+	if languages == "all" {
+		for i := range useGenerator {
+			useGenerator[i] = true
 		}
 	} else {
+		generatorNames := strings.Split(languages, ",")
 		for _, name := range generatorNames {
-			generator, ok := availableGenerators[name]
-			if !ok {
-				fmt.Fprintf(os.Stderr, "Unknown language: %s\n", name)
-				os.Exit(1)
+		generators:
+			for i, g := range availableGenerators {
+				for _, n := range g.names {
+					if n == name {
+						useGenerator[i] = true
+						break generators
+					}
+				}
 			}
-			generators = append(generators, generator)
 		}
 	}
 
@@ -74,10 +115,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	for i, g := range generators {
-		err = g.Generate(metadata, objects, output)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Failed to generate %s events: %s\n", generatorNames[i], err)
+	for i, use := range useGenerator {
+		if use {
+			err = availableGenerators[i].generator.Generate(metadata, objects, output)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "Failed to generate %s events for %s\n", availableGenerators[i].displayName, err)
+			}
 		}
 	}
 }
