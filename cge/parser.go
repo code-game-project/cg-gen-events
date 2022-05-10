@@ -232,38 +232,41 @@ func (p *parser) property() (Property, error) {
 }
 
 func (p *parser) propertyType() (*PropertyType, error) {
-	if !p.match(STRING, BOOL, INT32, INT64, BIGINT, FLOAT32, FLOAT64, MAP, LIST, IDENTIFIER) {
+	if !p.match(STRING, BOOL, INT32, INT64, BIGINT, FLOAT32, FLOAT64, MAP, LIST, IDENTIFIER, TYPE) {
 		return &PropertyType{}, p.newError("Expect type after property name.")
 	}
 
 	propertyType := p.previous()
+	var generic *PropertyType
 
 	if propertyType.Type == IDENTIFIER {
-		if p.peek().Type == OPEN_CURLY {
-			if _, ok := p.identifiers[propertyType.Lexeme]; ok {
-				return &PropertyType{}, p.newErrorAt(fmt.Sprintf("'%s' already defined.", propertyType.Lexeme), propertyType)
-			}
-			p.identifiers[propertyType.Lexeme] = struct{}{}
-
-			p.match(OPEN_CURLY)
-
-			properties, err := p.block()
-			if err != nil {
-				return &PropertyType{}, err
-			}
-
-			p.objects = append(p.objects, Object{
-				Type:       TYPE,
-				Name:       propertyType.Lexeme,
-				Properties: properties,
-			})
-		} else {
-			p.accessedIdentifiers = append(p.accessedIdentifiers, propertyType)
+		p.accessedIdentifiers = append(p.accessedIdentifiers, propertyType)
+	} else if propertyType.Type == TYPE {
+		if !p.match(IDENTIFIER) {
+			return &PropertyType{}, p.newError(fmt.Sprintf("Expect identifier after 'type' keyword."))
 		}
-	}
 
-	var generic *PropertyType
-	if propertyType.Type == MAP || propertyType.Type == LIST {
+		propertyType = p.previous()
+		if _, ok := p.identifiers[propertyType.Lexeme]; ok {
+			return &PropertyType{}, p.newErrorAt(fmt.Sprintf("'%s' already defined.", propertyType.Lexeme), propertyType)
+		}
+		p.identifiers[propertyType.Lexeme] = struct{}{}
+
+		if !p.match(OPEN_CURLY) {
+			return &PropertyType{}, p.newError("Expect block after type name.")
+		}
+
+		properties, err := p.block()
+		if err != nil {
+			return &PropertyType{}, err
+		}
+
+		p.objects = append(p.objects, Object{
+			Type:       TYPE,
+			Name:       propertyType.Lexeme,
+			Properties: properties,
+		})
+	} else if propertyType.Type == MAP || propertyType.Type == LIST {
 		if !p.match(LESS) {
 			return &PropertyType{}, p.newError("Expect generic.")
 		}

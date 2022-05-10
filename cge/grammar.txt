@@ -1,10 +1,11 @@
 ============= CGE Grammar =============
 
-cge -> (event|type)*
+metadata -> name IDENTIFIER version SEMVER
+cge -> metadata (event|type)*
 event -> 'event' IDENTIFIER block
 type -> 'type' IDENTIFIER block
-block -> '{' property? (',' property)* '}'
-property -> IDENTIFIER ':' type
-type -> IDENTIFIER | inlineType | generic
-inlineType -> IDENTIFIER block
-generic -> ('list'|'map') '<' type '>'
+property -> IDENTIFIER ':' propertyType
+propertyType -> IDENTIFIER | inlineType | generic
+inlineType -> 'type' IDENTIFIER block
+block -> '{' (property (',' property)*)? '}'
+generic -> ('list'|'map') '<' propertyType '>'
