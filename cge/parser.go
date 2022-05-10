@@ -146,7 +146,7 @@ func (p *parser) declaration() (Object, error) {
 		comments = append(comments, p.previous().Lexeme)
 	}
 
-	if !p.match(EVENT, TYPE) {
+	if !p.match(EVENT, TYPE, ENUM) {
 		return Object{}, p.newError("Expect event or type declaration.")
 	}
 
@@ -166,7 +166,13 @@ func (p *parser) declaration() (Object, error) {
 		return Object{}, p.newError(fmt.Sprintf("Expect block after %s name.", strings.ToLower(string(objectType))))
 	}
 
-	properties, err := p.block()
+	var properties []Property
+	var err error
+	if objectType == ENUM {
+		properties, err = p.enumBlock()
+	} else {
+		properties, err = p.block()
+	}
 	if err != nil {
 		return Object{}, err
 	}
@@ -184,6 +190,31 @@ func (p *parser) block() ([]Property, error) {
 
 	for p.peek().Type != EOF && p.peek().Type != CLOSE_CURLY {
 		property, err := p.property()
+		if err != nil {
+			p.errors = append(p.errors, err)
+			p.synchronize()
+			continue
+		}
+		properties = append(properties, property)
+		if !p.match(COMMA) {
+			break
+		}
+	}
+
+	p.match(COMMA)
+
+	if !p.match(CLOSE_CURLY) {
+		return nil, p.newError("Expect '}' after block.")
+	}
+
+	return properties, nil
+}
+
+func (p *parser) enumBlock() ([]Property, error) {
+	properties := make([]Property, 0)
+
+	for p.peek().Type != EOF && p.peek().Type != CLOSE_CURLY {
+		property, err := p.enumValue()
 		if err != nil {
 			p.errors = append(p.errors, err)
 			p.synchronize()
@@ -231,8 +262,25 @@ func (p *parser) property() (Property, error) {
 	}, nil
 }
 
+func (p *parser) enumValue() (Property, error) {
+	var comments []string
+	for p.match(COMMENT) {
+		comments = append(comments, p.previous().Lexeme)
+	}
+
+	if !p.match(IDENTIFIER) {
+		return Property{}, p.newError("Expect property name.")
+	}
+	name := p.previous()
+
+	return Property{
+		Comments: comments,
+		Name:     name.Lexeme,
+	}, nil
+}
+
 func (p *parser) propertyType() (*PropertyType, error) {
-	if !p.match(STRING, BOOL, INT32, INT64, BIGINT, FLOAT32, FLOAT64, MAP, LIST, IDENTIFIER, TYPE) {
+	if !p.match(STRING, BOOL, INT32, INT64, BIGINT, FLOAT32, FLOAT64, MAP, LIST, IDENTIFIER, TYPE, ENUM) {
 		return &PropertyType{}, p.newError("Expect type after property name.")
 	}
 
@@ -241,31 +289,39 @@ func (p *parser) propertyType() (*PropertyType, error) {
 
 	if propertyType.Type == IDENTIFIER {
 		p.accessedIdentifiers = append(p.accessedIdentifiers, propertyType)
-	} else if propertyType.Type == TYPE {
+	} else if propertyType.Type == TYPE || propertyType.Type == ENUM {
 		if !p.match(IDENTIFIER) {
 			return &PropertyType{}, p.newError(fmt.Sprintf("Expect identifier after 'type' keyword."))
 		}
 
-		propertyType = p.previous()
-		if _, ok := p.identifiers[propertyType.Lexeme]; ok {
-			return &PropertyType{}, p.newErrorAt(fmt.Sprintf("'%s' already defined.", propertyType.Lexeme), propertyType)
+		identifier := p.previous()
+		if _, ok := p.identifiers[identifier.Lexeme]; ok {
+			return &PropertyType{}, p.newErrorAt(fmt.Sprintf("'%s' already defined.", identifier.Lexeme), identifier)
 		}
-		p.identifiers[propertyType.Lexeme] = struct{}{}
+		p.identifiers[identifier.Lexeme] = struct{}{}
 
 		if !p.match(OPEN_CURLY) {
 			return &PropertyType{}, p.newError("Expect block after type name.")
 		}
 
-		properties, err := p.block()
+		var properties []Property
+		var err error
+		if propertyType.Type == TYPE {
+			properties, err = p.block()
+		} else {
+			properties, err = p.enumBlock()
+		}
 		if err != nil {
 			return &PropertyType{}, err
 		}
 
 		p.objects = append(p.objects, Object{
-			Type:       TYPE,
-			Name:       propertyType.Lexeme,
+			Type:       propertyType.Type,
+			Name:       identifier.Lexeme,
 			Properties: properties,
 		})
+
+		propertyType = identifier
 	} else if propertyType.Type == MAP || propertyType.Type == LIST {
 		if !p.match(LESS) {
 			return &PropertyType{}, p.newError("Expect generic.")

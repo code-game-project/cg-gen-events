@@ -27,8 +27,10 @@ func (g *Go) Generate(metadata cge.Metadata, objects []cge.Object, dir string) e
 	for _, object := range objects {
 		if object.Type == cge.EVENT {
 			g.generateEvent(object)
-		} else {
+		} else if object.Type == cge.TYPE {
 			g.generateType(object)
+		} else {
+			g.generateEnum(object)
 		}
 	}
 
@@ -80,6 +82,20 @@ func (g *Go) generateType(object cge.Object) {
 	g.builder.WriteString("}\n")
 }
 
+func (g *Go) generateEnum(object cge.Object) {
+	g.builder.WriteString("\n")
+	g.generateComments("", object.Comments)
+	g.builder.WriteString(fmt.Sprintf("type %s string\n", snakeToPascal(object.Name)))
+	if len(object.Properties) > 0 {
+		g.builder.WriteString(fmt.Sprintf("\nconst (\n"))
+		for _, property := range object.Properties {
+			g.generateComments("\t", property.Comments)
+			g.builder.WriteString(fmt.Sprintf("%s%s %s = \"%s\"\n", snakeToPascal(object.Name), snakeToPascal(property.Name), snakeToPascal(object.Name), property.Name))
+		}
+		g.builder.WriteString(fmt.Sprintf(")\n"))
+	}
+}
+
 func (g *Go) generateProperties(properties []cge.Property) {
 	for _, property := range properties {
 		g.generateComments("\t", property.Comments)
@@ -87,9 +103,9 @@ func (g *Go) generateProperties(properties []cge.Property) {
 	}
 }
 
-func (g *Go) generateComments(prefix string, comments []string) {
+func (g *Go) generateComments(indent string, comments []string) {
 	for _, comment := range comments {
-		g.builder.WriteString(prefix + "// " + comment + "\n")
+		g.builder.WriteString(indent + "// " + comment + "\n")
 	}
 }
 

@@ -114,6 +114,8 @@ func (s *scanner) identifier() error {
 		s.addToken(EVENT)
 	case "type":
 		s.addToken(TYPE)
+	case "enum":
+		s.addToken(ENUM)
 	case "string":
 		s.addToken(STRING)
 	case "bool":

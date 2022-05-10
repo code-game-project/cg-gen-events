@@ -1,11 +1,14 @@
 ============= CGE Grammar =============
 
 metadata -> name IDENTIFIER version SEMVER
-cge -> metadata (event|type)*
+cge -> metadata (event|type|enum)*
 event -> 'event' IDENTIFIER block
 type -> 'type' IDENTIFIER block
+type -> 'enum' IDENTIFIER enumBlock
 property -> IDENTIFIER ':' propertyType
-propertyType -> IDENTIFIER | inlineType | generic
+propertyType -> IDENTIFIER | inlineType | inlineEnum | generic
 inlineType -> 'type' IDENTIFIER block
+inlineEnum -> 'enum' IDENTIFIER enumBlock
 block -> '{' (property (',' property)*)? '}'
+enumBlock -> '{' (IDENTIFIER (',' IDENTIFIER)*)? '}'
 generic -> ('list'|'map') '<' propertyType '>'

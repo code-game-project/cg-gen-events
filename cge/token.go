@@ -7,6 +7,7 @@ const (
 	VERSION TokenType = "VERSION"
 	EVENT   TokenType = "EVENT"
 	TYPE    TokenType = "TYPE"
+	ENUM    TokenType = "ENUM"
 
 	STRING  TokenType = "STRING"
 	BOOL    TokenType = "BOOL"

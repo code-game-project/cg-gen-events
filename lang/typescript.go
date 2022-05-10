@@ -22,7 +22,7 @@ func (g *TypeScript) Generate(metadata cge.Metadata, objects []cge.Object, dir s
 
 	g.builder = strings.Builder{}
 
-	g.builder.WriteString("/**\n")
+	g.builder.WriteString("/*\n")
 	g.builder.WriteString(fmt.Sprintf(" * %s v%s\n", snakeToTitle(metadata.Name), metadata.Version))
 	if len(metadata.Comments) > 0 {
 		g.builder.WriteString("\n")
@@ -35,8 +35,10 @@ func (g *TypeScript) Generate(metadata cge.Metadata, objects []cge.Object, dir s
 	for _, object := range objects {
 		if object.Type == cge.EVENT {
 			g.generateEvent(object)
-		} else {
+		} else if object.Type == cge.TYPE {
 			g.generateType(object)
+		} else {
+			g.generateEnum(object)
 		}
 		g.builder.WriteString("\n")
 	}
@@ -65,25 +67,43 @@ func (g *TypeScript) generateType(object cge.Object) {
 	g.builder.WriteString("}\n")
 }
 
+func (g *TypeScript) generateEnum(object cge.Object) {
+	valueComments := make([]string, len(object.Properties))
+	for i, p := range object.Properties {
+		valueComments[i] = fmt.Sprintf("- %s: %s", p.Name, strings.Join(p.Comments, " "))
+	}
+	object.Comments = append(object.Comments, valueComments...)
+	g.generateComments("", object.Comments)
+	if len(object.Properties) == 0 {
+		g.builder.WriteString(fmt.Sprintf("export type %s = undefined;\n", snakeToPascal(object.Name)))
+		return
+	}
+	g.builder.WriteString(fmt.Sprintf("export type %s = \"%s\"", snakeToPascal(object.Name), object.Properties[0].Name))
+	for i := 1; i < len(object.Properties); i++ {
+		g.builder.WriteString(fmt.Sprintf(" | \"%s\"", object.Properties[i].Name))
+	}
+	g.builder.WriteString(";\n")
+}
+
 func (g *TypeScript) generateProperties(properties []cge.Property, indentSize int) {
 	indent := strings.Repeat("  ", indentSize)
 	for _, property := range properties {
 		g.generateComments("    ", property.Comments)
-		g.builder.WriteString(fmt.Sprintf("%s%s: %s,\n", indent, property.Name, g.goType(property.Type.Token.Type, property.Type.Token.Lexeme, property.Type.Generic)))
+		g.builder.WriteString(fmt.Sprintf("%s%s: %s,\n", indent, property.Name, g.tsType(property.Type.Token.Type, property.Type.Token.Lexeme, property.Type.Generic)))
 	}
 }
 
-func (g *TypeScript) generateComments(prefix string, comments []string) {
+func (g *TypeScript) generateComments(indent string, comments []string) {
 	if len(comments) != 0 {
-		g.builder.WriteString(prefix + "/**\n")
+		g.builder.WriteString(indent + "/**\n")
 		for _, comment := range comments {
-			g.builder.WriteString(prefix + " * " + comment + "\n")
+			g.builder.WriteString(indent + " * " + comment + "\n")
 		}
-		g.builder.WriteString(prefix + " */\n")
+		g.builder.WriteString(indent + " */\n")
 	}
 }
 
-func (g *TypeScript) goType(tokenType cge.TokenType, lexeme string, generic *cge.PropertyType) string {
+func (g *TypeScript) tsType(tokenType cge.TokenType, lexeme string, generic *cge.PropertyType) string {
 	switch tokenType {
 	case cge.STRING:
 		return "string"
@@ -100,9 +120,9 @@ func (g *TypeScript) goType(tokenType cge.TokenType, lexeme string, generic *cge
 	case cge.FLOAT64:
 		return "number"
 	case cge.LIST:
-		return g.goType(generic.Token.Type, generic.Token.Lexeme, generic.Generic) + "[]"
+		return g.tsType(generic.Token.Type, generic.Token.Lexeme, generic.Generic) + "[]"
 	case cge.MAP:
-		return "{ [index: string]: " + g.goType(generic.Token.Type, generic.Token.Lexeme, generic.Generic) + " }"
+		return "{ [index: string]: " + g.tsType(generic.Token.Type, generic.Token.Lexeme, generic.Generic) + " }"
 	case cge.IDENTIFIER:
 		return snakeToPascal(lexeme)
 	}

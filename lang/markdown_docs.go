@@ -12,6 +12,7 @@ import (
 type MarkdownDocs struct {
 	eventTextBuilder strings.Builder
 	typeTextBuilder  strings.Builder
+	enumTextBuilder  strings.Builder
 }
 
 func (m *MarkdownDocs) Generate(metadata cge.Metadata, objects []cge.Object, dir string) error {
@@ -23,8 +24,10 @@ func (m *MarkdownDocs) Generate(metadata cge.Metadata, objects []cge.Object, dir
 	for _, object := range objects {
 		if object.Type == cge.EVENT {
 			m.generateEvent(object)
-		} else {
+		} else if object.Type == cge.TYPE {
 			m.generateType(object)
+		} else {
+			m.generateEnum(object)
 		}
 	}
 
@@ -44,6 +47,10 @@ func (m *MarkdownDocs) Generate(metadata cge.Metadata, objects []cge.Object, dir
 
 	file.WriteString(m.typeTextBuilder.String())
 
+	file.WriteString("\n")
+
+	file.WriteString(m.enumTextBuilder.String())
+
 	file.Close()
 
 	return nil
@@ -60,6 +67,10 @@ func (m *MarkdownDocs) generateEvent(object cge.Object) {
 		m.eventTextBuilder.WriteString(comment + "\n")
 	}
 
+	if len(object.Comments) > 0 {
+		m.eventTextBuilder.WriteString("\n")
+	}
+
 	m.generateProperties(&m.eventTextBuilder, object.Properties)
 }
 
@@ -74,16 +85,49 @@ func (m *MarkdownDocs) generateType(object cge.Object) {
 		m.typeTextBuilder.WriteString(comment + "\n")
 	}
 
+	if len(object.Comments) > 0 {
+		m.typeTextBuilder.WriteString("\n")
+	}
+
 	m.generateProperties(&m.typeTextBuilder, object.Properties)
+}
+
+func (m *MarkdownDocs) generateEnum(object cge.Object) {
+	if m.enumTextBuilder.Len() == 0 {
+		m.enumTextBuilder.WriteString("## Enums\n")
+	}
+	m.enumTextBuilder.WriteString("\n")
+	m.enumTextBuilder.WriteString(fmt.Sprintf("### %s\n\n", object.Name))
+
+	for _, comment := range object.Comments {
+		m.enumTextBuilder.WriteString(comment + "\n")
+	}
+
+	if len(object.Comments) > 0 {
+		m.enumTextBuilder.WriteString("\n")
+	}
+
+	if len(object.Properties) == 0 {
+		m.enumTextBuilder.WriteString("Possible values: none\n")
+		return
+	}
+
+	m.enumTextBuilder.WriteString("Possible values:\n")
+	m.enumTextBuilder.WriteString("| Value | Description |\n")
+	m.enumTextBuilder.WriteString("| ----- | ----------- |\n")
+
+	for _, property := range object.Properties {
+		m.enumTextBuilder.WriteString(fmt.Sprintf("| %s | %s |\n", property.Name, strings.Join(property.Comments, " ")))
+	}
 }
 
 func (m *MarkdownDocs) generateProperties(builder *strings.Builder, properties []cge.Property) {
 	if len(properties) == 0 {
-		builder.WriteString("\nProperties: none\n")
+		builder.WriteString("Properties: none\n")
 		return
 	}
 
-	builder.WriteString("\nProperties:\n")
+	builder.WriteString("Properties:\n")
 	builder.WriteString("| Name | Type | Description |\n")
 	builder.WriteString("| ---- | ---- | ----------- |\n")
 

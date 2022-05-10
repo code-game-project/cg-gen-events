@@ -26,14 +26,14 @@ var availableGenerators = []generator{
 		generator:   &lang.Go{},
 	},
 	{
-		displayName: "TypeScript",
-		names:       []string{"ts", "typescript"},
-		generator:   &lang.TypeScript{},
-	},
-	{
 		displayName: "Markdown docs",
 		names:       []string{"markdown", "md", "docs"},
 		generator:   &lang.MarkdownDocs{},
+	},
+	{
+		displayName: "TypeScript",
+		names:       []string{"ts", "typescript"},
+		generator:   &lang.TypeScript{},
 	},
 }
 
