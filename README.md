@@ -52,8 +52,8 @@ Use `-help` for a complete list of available options.
 ## Supported languages
 
 - Go
-- TypeScript
 - Markdown docs
+- TypeScript
 
 ## License
 
