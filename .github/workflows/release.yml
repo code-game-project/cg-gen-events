@@ -29,7 +29,9 @@ jobs:
       env:
         GOOS: ${{matrix.platform}}
         GOARCH: amd64
-      run: go build -v -o cg-gen-events_${{ matrix.platform }} .
+      run: 
+        go build -v -o cg-gen-events_${{ matrix.platform }} .
+        chmod +x cg-gen-events_${{ matrix.platform }}
     - uses: actions/upload-artifact@v2
       with:
         name: cg-gen-events_${{ matrix.platform }}
