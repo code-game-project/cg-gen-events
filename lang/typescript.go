@@ -55,19 +55,20 @@ func (g *TypeScript) Generate(metadata cge.Metadata, objects []cge.Object, dir s
 func (g *TypeScript) generateEvent(object cge.Object) {
 	g.generateComments("", object.Comments)
 	g.builder.WriteString(fmt.Sprintf("export interface %s {\n", snakeToPascal(object.Name)))
-	g.builder.WriteString(fmt.Sprintf("  name: \"%s\",\n  data: {\n", object.Name))
-
-	g.generateProperties(object.Properties, 2)
-
-	g.builder.WriteString("  }\n}\n")
+	if len(object.Properties) > 0 {
+		g.builder.WriteString(fmt.Sprintf("  name: \"%s\",\n  data: {\n", object.Name))
+		g.generateProperties(object.Properties, 2)
+		g.builder.WriteString("  },\n")
+	} else {
+		g.builder.WriteString(fmt.Sprintf("  name: \"%s\",\n  data: undefined,\n", object.Name))
+	}
+	g.builder.WriteString("}\n")
 }
 
 func (g *TypeScript) generateType(object cge.Object) {
 	g.generateComments("", object.Comments)
 	g.builder.WriteString(fmt.Sprintf("export interface %s {\n", snakeToPascal(object.Name)))
-
 	g.generateProperties(object.Properties, 1)
-
 	g.builder.WriteString("}\n")
 }
 
