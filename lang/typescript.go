@@ -32,9 +32,11 @@ func (g *TypeScript) Generate(metadata cge.Metadata, objects []cge.Object, dir s
 	}
 	g.builder.WriteString(" */\n\n")
 
+	eventNames := make([]string, 0)
 	for _, object := range objects {
 		if object.Type == cge.EVENT {
 			g.generateEvent(object)
+			eventNames = append(eventNames, object.Name)
 		} else if object.Type == cge.TYPE {
 			g.generateType(object)
 		} else {
@@ -42,6 +44,8 @@ func (g *TypeScript) Generate(metadata cge.Metadata, objects []cge.Object, dir s
 		}
 		g.builder.WriteString("\n")
 	}
+
+	g.generateUnionType(eventNames)
 
 	file.WriteString(g.builder.String())
 
@@ -101,6 +105,19 @@ func (g *TypeScript) generateComments(indent string, comments []string) {
 		}
 		g.builder.WriteString(indent + " */\n")
 	}
+}
+
+func (g *TypeScript) generateUnionType(eventNames []string) {
+	if len(eventNames) == 0 {
+		g.builder.WriteString(fmt.Sprintf("export type Events = undefined;\n"))
+		return
+	}
+
+	g.builder.WriteString(fmt.Sprintf("export type Events = %s", snakeToPascal(eventNames[0])))
+	for i := 1; i < len(eventNames); i++ {
+		g.builder.WriteString(fmt.Sprintf(" | %s", snakeToPascal(eventNames[i])))
+	}
+	g.builder.WriteString(";\n")
 }
 
 func (g *TypeScript) tsType(tokenType cge.TokenType, lexeme string, generic *cge.PropertyType) string {
