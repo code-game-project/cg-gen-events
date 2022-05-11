@@ -61,7 +61,7 @@ func main() {
 	var err error
 	if strings.HasPrefix(flag.Arg(0), "http://") || strings.HasPrefix(flag.Arg(0), "https://") {
 		url := flag.Arg(0)
-		if !strings.HasSuffix(url, "/events") {
+		if !strings.HasSuffix(url, "/events") && !strings.HasSuffix(url, ".cge") {
 			if strings.HasSuffix(url, "/") {
 				url = url + "events"
 			} else {
