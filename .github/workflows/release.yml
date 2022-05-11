@@ -5,98 +5,21 @@ on:
     tags:
       - v*
 jobs:
-  build-releases:
+  releases-matrix:
+    name: Release Go Binary
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        platform:
-          [
-            "windows",
-            "darwin",
-            "linux",
-          ]
-    name: Build ${{ matrix.platform }}
-    runs-on: ubuntu-latest
+        goos: [linux, windows, darwin]
+        goarch: [amd64, arm64]
+        exclude:
+          - goarch: arm64
+            goos: windows
     steps:
     - uses: actions/checkout@v3
-
-    - name: Set up Go
-      uses: actions/setup-go@v3
+    - uses: wangyoucao577/go-release-action@v1.28
       with:
-        go-version: 1.18
-    - name: Build
-      env:
-        GOOS: ${{matrix.platform}}
-        GOARCH: amd64
-      run: |
-        go build -v -o cg-gen-events_${{ matrix.platform }} .
-        chmod +x cg-gen-events_${{ matrix.platform }}
-    - uses: actions/upload-artifact@v2
-      with:
-        name: cg-gen-events_${{ matrix.platform }}
-        path: cg-gen-events_${{ matrix.platform }}
-  create_release:
-    name:  Create release from this build
-    needs: [build-releases]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - name: Read info
-        id: tags
-        shell: bash
-        run: |
-          echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\/v/}
-          echo ::set-output name=TAG::${GITHUB_REF/refs\/tags\//}
-      - uses: actions/download-artifact@v2
-        with:
-          name: cg-gen-events_windows
-      - uses: actions/download-artifact@v2
-        with:
-          name: cg-gen-events_darwin
-      - uses: actions/download-artifact@v2
-        with:
-          name: cg-gen-events_linux
-      - name: Display structure of downloaded files
-        run: ls -R
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@master
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          tag_name: ${{ steps.tags.outputs.tag }}
-          release_name: ${{ steps.tags.outputs.tag }}
-          draft: false
-          prerelease: false
-      - name: Upload windows asset
-        id: upload-release-asset-windows
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./cg-gen-events_windows
-          asset_name: cg-gen-events_windows.exe
-          asset_content_type: application/octet-stream
-      - name: Upload macos asset
-        id: upload-release-asset-macos
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./cg-gen-events_darwin
-          asset_name: cg-gen-events_macos
-          asset_content_type: application/octet-stream
-      - name: Upload linux asset
-        id: upload-release-asset-linux
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./cg-gen-events_linux
-          asset_name: cg-gen-events_linux
-          asset_content_type: application/octet-stream
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        goos: ${{ matrix.goos }}
+        goarch: ${{ matrix.goarch }}
+        extra_files: LICENSE README.md
