@@ -23,13 +23,11 @@ jobs:
       uses: actions/setup-go@v3
       with:
         go-version: 1.18
-    - name: Update golang.org/x/sys
-      run: go get -u golang.org/x/sys
     - name: Build
       env:
         GOOS: ${{matrix.platform}}
         GOARCH: amd64
-      run: 
+      run: |
         go build -v -o cg-gen-events_${{ matrix.platform }} .
         chmod +x cg-gen-events_${{ matrix.platform }}
     - uses: actions/upload-artifact@v2
