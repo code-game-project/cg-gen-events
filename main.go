@@ -77,7 +77,7 @@ func main() {
 			fmt.Fprintf(os.Stderr, "Failed to download CGE file from url '%s': %s\n", url, resp.Status)
 			os.Exit(1)
 		}
-		if resp.Header.Get("Content-Type") != "text/plain" {
+		if !strings.Contains(resp.Header.Get("Content-Type"), "text/plain") {
 			fmt.Fprintf(os.Stderr, "Unsupported content type at '%s': expected %s, got %s\n", url, "text/plain", resp.Header.Get("Content-Type"))
 			os.Exit(1)
 		}
