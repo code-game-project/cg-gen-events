@@ -22,4 +22,5 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         goos: ${{ matrix.goos }}
         goarch: ${{ matrix.goarch }}
+        asset_name: cg-gen-events-${{matrix.goos}}-${{matrix.goarch}}
         extra_files: LICENSE README.md
