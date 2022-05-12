@@ -37,6 +37,42 @@ Use `-help` for a complete list of available options.
 
 ## Installation
 
+### Windows
+
+1. Open the Start menu
+2. Search for `powershell`
+3. Hit `Run as Administrator`
+4. Paste the following commands:
+
+#### Install
+
+```powershell
+cd (gi $env:temp).fullname
+Invoke-WebRequest -Uri "https://github.com/code-game-project/cg-gen-events/releases/latest/download/cg-gen-events-windows-amd64.zip" -OutFile "cg-gen-events.zip"
+Expand-Archive -LiteralPath "cg-gen-events.zip" -DestinationPath "cg-gen-events"
+rm cg-gen-events.zip
+New-Item -Path "C:\Program Files\cg-gen-events" -ItemType Directory
+cp .\cg-gen-events\cg-gen-events.exe 'C:\Program Files\cg-gen-events\'
+rm -r -fo cg-gen-events
+$oldpath = (Get-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Environment' -Name PATH).path
+$newpath = "$oldpath;C:\Program Files\cg-gen-events"
+Set-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Environment' -Name PATH -Value $newpath
+```
+
+Please reboot to complete the installation.
+
+#### Update
+
+```powershell
+cd 'C:\Program Files\cg-gen-events\'
+rm cg-gen-events.exe
+Invoke-WebRequest -Uri "https://github.com/code-game-project/cg-gen-events/releases/latest/download/cg-gen-events-windows-amd64.zip" -OutFile "cg-gen-events.zip"
+Expand-Archive -LiteralPath "cg-gen-events.zip" -DestinationPath "cg-gen-events"
+rm cg-gen-events.zip
+cp .\cg-gen-events\cg-gen-events.exe .
+rm -r -fo cg-gen-events
+```
+
 ### macOS
 
 #### x86_64
