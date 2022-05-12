@@ -3,26 +3,6 @@
 
 Easily generate [CodeGame](https://github.com/code-game-project) event definitions for a variety of languages from [CodeGame Events (CGE)](https://github.com/code-game-project/docs/blob/main/docs/code-game-events-language-specification.md) files.
 
-## Installation
-
-### Prebuilt binaries
-
-You can download a prebuilt binary file for your operating system on the [releases](https://github.com/code-game-project/cg-gen-events/releases) page.
-
-You might need to make the file executable before running it.
-
-### Compiling from source
-
-#### Prerequisites
-
-- [Go](https://go.dev/) 1.18+
-
-```sh
-git clone https://github.com/code-game-project/cg-gen-events.git
-cd cg-gen-events
-go build .
-```
-
 ## Usage
 
 Generate from a local file:
@@ -54,6 +34,54 @@ Use `-help` for a complete list of available options.
 - Go
 - Markdown docs
 - TypeScript
+
+## Installation
+
+### macOS
+
+#### x86_64
+
+```sh
+curl -L https://github.com/code-game-project/cg-gen-events/releases/latest/download/cg-gen-events-darwin-amd64.tar.gz | tar -xz cg-gen-events && sudo mv cg-gen-events /usr/local/bin
+```
+
+#### ARM64
+
+```sh
+curl -L https://github.com/code-game-project/cg-gen-events/releases/latest/download/cg-gen-events-darwin-arm64.tar.gz | tar -xz cg-gen-events && sudo mv cg-gen-events /usr/local/bin
+```
+
+### Linux
+
+#### x86_64
+
+```sh
+curl -L https://github.com/code-game-project/cg-gen-events/releases/latest/download/cg-gen-events-linux-amd64.tar.gz | tar -xz cg-gen-events && sudo mv cg-gen-events /usr/local/bin
+```
+
+#### ARM64
+
+```sh
+curl -L https://github.com/code-game-project/cg-gen-events/releases/latest/download/cg-gen-events-linux-arm64.tar.gz | tar -xz cg-gen-events && sudo mv cg-gen-events /usr/local/bin
+```
+
+### Other
+
+You can download a prebuilt binary file for your operating system on the [releases](https://github.com/code-game-project/cg-gen-events/releases) page.
+
+You might need to make the file executable before running it.
+
+### Compiling from source
+
+#### Prerequisites
+
+- [Go](https://go.dev/) 1.18+
+
+```sh
+git clone https://github.com/code-game-project/cg-gen-events.git
+cd cg-gen-events
+go build .
+```
 
 ## License
 
