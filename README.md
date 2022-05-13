@@ -47,30 +47,21 @@ Use `-help` for a complete list of available options.
 #### Install
 
 ```powershell
-cd (gi $env:temp).fullname
-Invoke-WebRequest -Uri "https://github.com/code-game-project/cg-gen-events/releases/latest/download/cg-gen-events-windows-amd64.zip" -OutFile "cg-gen-events.zip"
-Expand-Archive -LiteralPath "cg-gen-events.zip" -DestinationPath "cg-gen-events"
-rm cg-gen-events.zip
-New-Item -Path "C:\Program Files\cg-gen-events" -ItemType Directory
-cp .\cg-gen-events\cg-gen-events.exe 'C:\Program Files\cg-gen-events\'
-rm -r -fo cg-gen-events
-$oldpath = (Get-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Environment' -Name PATH).path
-$newpath = "$oldpath;C:\Program Files\cg-gen-events"
-Set-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Environment' -Name PATH -Value $newpath
+Invoke-WebRequest -Uri "https://github.com/code-game-project/cg-gen-events/releases/latest/download/cg-gen-events-windows-amd64.zip" -OutFile "C:\Program Files\cg-gen-events.zip"
+Expand-Archive -LiteralPath "C:\Program Files\cg-gen-events.zip" -DestinationPath "C:\Program Files\cg-gen-events"
+rm "C:\Program Files\cg-gen-events.zip"
+Set-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Environment' -Name PATH -Value "$((Get-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Environment' -Name PATH).path);C:\Program Files\cg-gen-events"
 ```
 
-Please reboot to complete the installation.
+**IMPORTANT:** Please reboot for the installation to take effect.
 
 #### Update
 
 ```powershell
-cd 'C:\Program Files\cg-gen-events\'
-rm cg-gen-events.exe
-Invoke-WebRequest -Uri "https://github.com/code-game-project/cg-gen-events/releases/latest/download/cg-gen-events-windows-amd64.zip" -OutFile "cg-gen-events.zip"
-Expand-Archive -LiteralPath "cg-gen-events.zip" -DestinationPath "cg-gen-events"
-rm cg-gen-events.zip
-cp .\cg-gen-events\cg-gen-events.exe .
-rm -r -fo cg-gen-events
+rm -r -fo "C:\Program Files\cg-gen-events"
+Invoke-WebRequest -Uri "https://github.com/code-game-project/cg-gen-events/releases/latest/download/cg-gen-events-windows-amd64.zip" -OutFile "C:\Program Files\cg-gen-events.zip"
+Expand-Archive -LiteralPath "C:\Program Files\cg-gen-events.zip" -DestinationPath "C:\Program Files\cg-gen-events"
+rm "C:\Program Files\cg-gen-events.zip"
 ```
 
 ### macOS
