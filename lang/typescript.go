@@ -60,7 +60,7 @@ func (g *TypeScript) generateEvent(object cge.Object) {
 		g.generateProperties(object.Properties, 2)
 		g.builder.WriteString("  },\n")
 	} else {
-		g.builder.WriteString(fmt.Sprintf("  name: \"%s\",\n  data: undefined,\n", object.Name))
+		g.builder.WriteString(fmt.Sprintf("  name: \"%s\",\n", object.Name))
 	}
 	g.builder.WriteString("}\n")
 }
