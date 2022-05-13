@@ -42,7 +42,7 @@ Use `-help` for a complete list of available options.
 1. Open the Start menu
 2. Search for `powershell`
 3. Hit `Run as Administrator`
-4. Paste the following commands:
+4. Paste the following commands and hit enter:
 
 #### Install
 
@@ -66,6 +66,8 @@ rm "C:\Program Files\cg-gen-events.zip"
 
 ### macOS
 
+Open the Terminal application, paste the command for your architecture and hit enter:
+
 #### x86_64
 
 ```sh
@@ -79,6 +81,8 @@ curl -L https://github.com/code-game-project/cg-gen-events/releases/latest/downl
 ```
 
 ### Linux
+
+Open a terminal, paste the command for your architecture and hit enter:
 
 #### x86_64
 
