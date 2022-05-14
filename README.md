@@ -66,7 +66,9 @@ rm "C:\Program Files\cg-gen-events.zip"
 
 ### macOS
 
-Open the Terminal application, paste the command for your architecture and hit enter:
+Open the Terminal application, paste the command for your architecture and hit enter.
+
+To update, simply run the command again.
 
 #### x86_64
 
@@ -82,7 +84,9 @@ curl -L https://github.com/code-game-project/cg-gen-events/releases/latest/downl
 
 ### Linux
 
-Open a terminal, paste the command for your architecture and hit enter:
+Open a terminal, paste the command for your architecture and hit enter.
+
+To update, simply run the command again.
 
 #### x86_64
 
