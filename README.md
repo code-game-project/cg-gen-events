@@ -19,15 +19,15 @@ cg-gen-events https://example.com/events
 
 Specify an output directory:
 ```sh
-cg-gen-events -output events/ my_game.cge
+cg-gen-events --output events/ my_game.cge
 ```
 
 Specify a list of languages as command line arguments instead of the interactive menu:
 ```sh
-cg-gen-events -languages go,typescript my_game.cge
+cg-gen-events --languages go,typescript my_game.cge
 ```
 
-Use `-help` for a complete list of available options.
+Use `--help` for a complete list of available options.
 
 ## Supported languages
 
