@@ -16,7 +16,7 @@ type Go struct {
 	needsMathBig bool
 }
 
-func (g *Go) Generate(metadata cge.Metadata, objects []cge.Object, dir string) error {
+func (g *Go) Generate(server bool, metadata cge.Metadata, objects []cge.Object, dir string) error {
 	file, err := os.Create(filepath.Join(dir, "events.go"))
 	if err != nil {
 		return err
@@ -44,7 +44,12 @@ func (g *Go) Generate(metadata cge.Metadata, objects []cge.Object, dir string) e
 	}
 	file.WriteString("*/\n")
 	file.WriteString(fmt.Sprintf("package %s\n\n", snakeToOneWord(metadata.Name)))
-	file.WriteString("import \"github.com/code-game-project/go-client/cg\"\n")
+
+	if server {
+		file.WriteString("import \"github.com/code-game-project/go-server/cg\"\n")
+	} else {
+		file.WriteString("import \"github.com/code-game-project/go-client/cg\"\n")
+	}
 
 	if g.needsMathBig {
 		file.WriteString("import \"math/big\"\n")

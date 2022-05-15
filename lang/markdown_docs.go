@@ -15,7 +15,7 @@ type MarkdownDocs struct {
 	enumTextBuilder  strings.Builder
 }
 
-func (m *MarkdownDocs) Generate(metadata cge.Metadata, objects []cge.Object, dir string) error {
+func (m *MarkdownDocs) Generate(server bool, metadata cge.Metadata, objects []cge.Object, dir string) error {
 	file, err := os.Create(filepath.Join(dir, "event_docs.md"))
 	if err != nil {
 		return err

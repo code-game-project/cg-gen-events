@@ -13,7 +13,7 @@ type TypeScript struct {
 	builder strings.Builder
 }
 
-func (g *TypeScript) Generate(metadata cge.Metadata, objects []cge.Object, dir string) error {
+func (g *TypeScript) Generate(server bool, metadata cge.Metadata, objects []cge.Object, dir string) error {
 	file, err := os.Create(filepath.Join(dir, snakeToKebab(metadata.Name)+"-events.d.ts"))
 	if err != nil {
 		return err
