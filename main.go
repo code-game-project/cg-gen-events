@@ -99,6 +99,14 @@ func main() {
 	}
 	defer input.Close()
 
+	metadata, objects, errs := cge.Parse(input)
+	if len(errs) > 0 {
+		for _, e := range errs {
+			fmt.Fprintln(os.Stderr, e)
+		}
+		os.Exit(1)
+	}
+
 	useGenerator := make([]bool, len(availableGenerators))
 
 	for languages == "" {
@@ -146,14 +154,6 @@ func main() {
 			fmt.Fprintln(os.Stderr, "Unknown language:", name)
 			os.Exit(1)
 		}
-	}
-
-	metadata, objects, errs := cge.Parse(input)
-	if len(errs) > 0 {
-		for _, e := range errs {
-			fmt.Fprintln(os.Stderr, e)
-		}
-		os.Exit(1)
 	}
 
 	err = os.Mkdir(output, 0755)

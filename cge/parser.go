@@ -3,13 +3,15 @@ package cge
 import (
 	"fmt"
 	"io"
+	"os"
 	"strings"
 )
+
+const CGEVersion = "0.3"
 
 type Metadata struct {
 	Name     string
 	Comments []string
-	Version  string
 }
 
 type ObjectType string
@@ -87,6 +89,9 @@ func (p *parser) parse() (Metadata, []Object, []error) {
 	if err != nil {
 		return Metadata{}, nil, []error{err}
 	}
+	if version != CGEVersion {
+		fmt.Fprintf(os.Stderr, "\x1b[33mWARNING: CGE version mismatch! Input file: v%s, cg-gen-events: v%s. There might be parsing issues.\n\x1b[0m", version, CGEVersion)
+	}
 
 	for p.peek().Type != EOF {
 		decl, err := p.declaration()
@@ -107,7 +112,6 @@ func (p *parser) parse() (Metadata, []Object, []error) {
 	return Metadata{
 		Name:     name,
 		Comments: comments,
-		Version:  version,
 	}, p.objects, p.errors
 }
 
@@ -134,7 +138,7 @@ func (p *parser) version() (string, error) {
 	}
 
 	if !p.match(VERSION_NUMBER) {
-		return "", p.newError("Expect version of the game.")
+		return "", p.newError("Expect CGE version.")
 	}
 
 	return p.previous().Lexeme, nil

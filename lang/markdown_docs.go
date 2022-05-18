@@ -31,7 +31,7 @@ func (m *MarkdownDocs) Generate(server bool, metadata cge.Metadata, objects []cg
 		}
 	}
 
-	file.WriteString(fmt.Sprintf("# %s Events v%s\n\n", snakeToTitle(metadata.Name), metadata.Version))
+	file.WriteString(fmt.Sprintf("# %s Events\n\n", snakeToTitle(metadata.Name)))
 
 	for _, c := range metadata.Comments {
 		file.WriteString(c + "\n")

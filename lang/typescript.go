@@ -22,15 +22,13 @@ func (g *TypeScript) Generate(server bool, metadata cge.Metadata, objects []cge.
 
 	g.builder = strings.Builder{}
 
-	g.builder.WriteString("/*\n")
-	g.builder.WriteString(fmt.Sprintf(" * %s v%s\n", snakeToTitle(metadata.Name), metadata.Version))
 	if len(metadata.Comments) > 0 {
-		g.builder.WriteString("\n")
+		g.builder.WriteString("/*\n")
+		for _, comment := range metadata.Comments {
+			g.builder.WriteString(" * " + comment + "\n")
+		}
+		g.builder.WriteString(" */\n\n")
 	}
-	for _, comment := range metadata.Comments {
-		g.builder.WriteString(" * " + comment + "\n")
-	}
-	g.builder.WriteString(" */\n\n")
 
 	eventNames := make([]string, 0)
 	for _, object := range objects {

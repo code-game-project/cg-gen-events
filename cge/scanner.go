@@ -146,24 +146,15 @@ func (s *scanner) versionNumber() error {
 		s.nextCharacter()
 	}
 
-	if s.peek() == '.' {
-		s.nextCharacter()
-		if !isDigit(s.peek()) {
-			return s.newError("Expect digit after '.'.")
-		}
-		for isDigit(s.peek()) {
-			s.nextCharacter()
-		}
+	if !s.match('.') {
+		return s.newError("Expect '.' after major version.")
+	}
 
-		if s.peek() == '.' {
-			s.nextCharacter()
-			if !isDigit(s.peek()) {
-				return s.newError("Expect digit after '.'.")
-			}
-			for isDigit(s.peek()) {
-				s.nextCharacter()
-			}
-		}
+	if !isDigit(s.peek()) {
+		return s.newError("Expect digit after '.'.")
+	}
+	for isDigit(s.peek()) {
+		s.nextCharacter()
 	}
 
 	s.addToken(VERSION_NUMBER)

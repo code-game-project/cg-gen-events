@@ -34,15 +34,13 @@ func (g *Go) Generate(server bool, metadata cge.Metadata, objects []cge.Object, 
 		}
 	}
 
-	file.WriteString("/*\n")
-	file.WriteString(fmt.Sprintf("%s v%s\n", snakeToTitle(metadata.Name), metadata.Version))
 	if len(metadata.Comments) > 0 {
-		file.WriteString("\n")
+		file.WriteString("/*\n")
+		for _, c := range metadata.Comments {
+			file.WriteString(c + "\n")
+		}
+		file.WriteString("*/\n")
 	}
-	for _, c := range metadata.Comments {
-		file.WriteString(c + "\n")
-	}
-	file.WriteString("*/\n")
 	file.WriteString(fmt.Sprintf("package %s\n\n", snakeToOneWord(metadata.Name)))
 
 	if server {
