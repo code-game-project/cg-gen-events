@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -89,7 +90,7 @@ func (p *parser) parse() (Metadata, []Object, []error) {
 	if err != nil {
 		return Metadata{}, nil, []error{err}
 	}
-	if version != CGEVersion {
+	if !isVersionCompatible(version) {
 		fmt.Fprintf(os.Stderr, "\x1b[33mWARNING: CGE version mismatch! Input file: v%s, cg-gen-events: v%s. There might be parsing issues.\n\x1b[0m", version, CGEVersion)
 	}
 
@@ -385,6 +386,31 @@ func (p *parser) synchronize() {
 		}
 		p.current++
 	}
+}
+
+func isVersionCompatible(version string) bool {
+	fileParts := strings.Split(version, ".")
+	programParts := strings.Split(CGEVersion, ".")
+
+	if fileParts[0] != programParts[0] {
+		return false
+	}
+
+	if programParts[0] == "0" && fileParts[1] != programParts[1] {
+		return false
+	}
+
+	fileMinor, err := strconv.Atoi(fileParts[1])
+	if err != nil {
+		return false
+	}
+
+	programMinor, err := strconv.Atoi(programParts[1])
+	if err != nil {
+		return false
+	}
+
+	return programMinor >= fileMinor
 }
 
 type ParseError struct {
