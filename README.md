@@ -1,7 +1,7 @@
 # cg-gen-events
 ![CGE Version](https://img.shields.io/badge/CGE-v0.3-green)
 
-Easily generate [CodeGame](https://github.com/code-game-project) event definitions for a variety of languages from [CodeGame Events (CGE)](https://github.com/code-game-project/docs/blob/main/docs/code-game-events-language-specification.md) files.
+Easily generate [CodeGame](https://code-game.org) event definitions for a variety of languages from [CodeGame Events (CGE)](https://docs.code-game.org/specifications/cge) files.
 
 ## Usage
 
@@ -120,7 +120,7 @@ go build .
 
 ## License
 
-Copyright (c) 2022 CodeGame Contributors (https://github.com/orgs/code-game-project/people)
+Copyright (c) 2022 CodeGame Contributors (https://code-game.org/contributors)
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
