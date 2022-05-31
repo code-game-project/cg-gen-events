@@ -101,6 +101,11 @@ func main() {
 	}
 	defer input.Close()
 
+	if stat, err := os.Stat(output); err == nil && !stat.IsDir() {
+		cli.Error("%s is a file.", output)
+		os.Exit(1)
+	}
+
 	metadata, objects, errs := cge.Parse(input)
 	if len(errs) > 0 {
 		for _, e := range errs {

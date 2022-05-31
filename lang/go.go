@@ -41,7 +41,7 @@ func (g *Go) Generate(server bool, metadata cge.Metadata, objects []cge.Object, 
 		}
 		file.WriteString("*/\n")
 	}
-	file.WriteString(fmt.Sprintf("package %s\n\n", snakeToOneWord(metadata.Name)))
+	file.WriteString(fmt.Sprintf("package %s\n\n", detectPackageName(dir, snakeToOneWord(metadata.Name))))
 
 	if server {
 		file.WriteString("import \"github.com/code-game-project/go-server/cg\"\n")
@@ -137,4 +137,26 @@ func (g *Go) goType(tokenType cge.TokenType, lexeme string, generic *cge.Propert
 		return snakeToPascal(lexeme)
 	}
 	return "any"
+}
+
+func detectPackageName(dir, fallback string) string {
+	path, err := filepath.Abs(dir)
+	if err != nil {
+		return fallback
+	}
+
+	if _, err := os.Stat(filepath.Join(dir, "main.go")); err == nil {
+		return "main"
+	}
+
+	name := filepath.Base(path)
+	name = strings.ReplaceAll(name, " ", "")
+	name = strings.ReplaceAll(name, "-", "")
+	name = strings.ReplaceAll(name, "_", "")
+
+	if name == "." || name == "/" {
+		return fallback
+	}
+
+	return name
 }
