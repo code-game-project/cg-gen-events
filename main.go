@@ -12,6 +12,7 @@ import (
 	"github.com/AlecAivazis/survey/v2/terminal"
 	"github.com/code-game-project/cg-gen-events/cge"
 	"github.com/code-game-project/cg-gen-events/lang"
+	"github.com/code-game-project/codegame-cli/cli"
 	"github.com/spf13/pflag"
 )
 
@@ -63,7 +64,7 @@ func openInputFile(filename string) (io.ReadCloser, error) {
 
 	input, err := os.Open(pflag.Arg(0))
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to open input file: %s\n", err)
+		cli.Error("Failed to open input file: %s", err)
 		os.Exit(1)
 	}
 	return input, err
@@ -94,7 +95,7 @@ func main() {
 
 	input, err := openInputFile(pflag.Arg(0))
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
+		cli.Error(err.Error())
 		os.Exit(1)
 	}
 	defer input.Close()
@@ -102,7 +103,7 @@ func main() {
 	metadata, objects, errs := cge.Parse(input)
 	if len(errs) > 0 {
 		for _, e := range errs {
-			fmt.Fprintln(os.Stderr, e)
+			cli.Error(e.Error())
 		}
 		os.Exit(1)
 	}
@@ -124,7 +125,7 @@ func main() {
 			if errors.Is(err, terminal.InterruptErr) {
 				os.Exit(0)
 			} else {
-				fmt.Fprintln(os.Stderr, err)
+				cli.Error(err.Error())
 				os.Exit(1)
 			}
 		}
@@ -151,14 +152,14 @@ func main() {
 					}
 				}
 			}
-			fmt.Fprintln(os.Stderr, "Unknown language:", name)
+			cli.Error("Unknown language: %s", name)
 			os.Exit(1)
 		}
 	}
 
 	err = os.Mkdir(output, 0755)
 	if err != nil && !os.IsExist(err) {
-		fmt.Fprintf(os.Stderr, "Failed to create output directory: %s\n", err)
+		cli.Error("Failed to create output directory: %s", err)
 		os.Exit(1)
 	}
 
@@ -166,7 +167,7 @@ func main() {
 		if use {
 			err = availableGenerators[i].generator.Generate(server, metadata, objects, output)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "Failed to generate %s events for %s\n", availableGenerators[i].displayName, err)
+				cli.Error("Failed to generate %s events for %s", availableGenerators[i].displayName, err)
 			}
 		}
 	}

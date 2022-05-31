@@ -3,9 +3,10 @@ package cge
 import (
 	"fmt"
 	"io"
-	"os"
 	"strconv"
 	"strings"
+
+	"github.com/code-game-project/codegame-cli/cli"
 )
 
 const CGEVersion = "0.3"
@@ -91,7 +92,7 @@ func (p *parser) parse() (Metadata, []Object, []error) {
 		return Metadata{}, nil, []error{err}
 	}
 	if !isVersionCompatible(version) {
-		fmt.Fprintf(os.Stderr, "\x1b[33mWARNING: CGE version mismatch! Input file: v%s, cg-gen-events: v%s. There might be parsing issues.\n\x1b[0m", version, CGEVersion)
+		cli.Warn("CGE version mismatch! Input file: v%s, cg-gen-events: v%s. There might be parsing issues.", version, CGEVersion)
 	}
 
 	for p.peek().Type != EOF {
