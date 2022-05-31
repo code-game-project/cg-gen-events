@@ -17,7 +17,7 @@ type Go struct {
 }
 
 func (g *Go) Generate(server bool, metadata cge.Metadata, objects []cge.Object, dir string) error {
-	file, err := os.Create(filepath.Join(dir, "events.go"))
+	file, err := os.Create(filepath.Join(dir, "event_definitions.go"))
 	if err != nil {
 		return err
 	}
@@ -58,7 +58,7 @@ func (g *Go) Generate(server bool, metadata cge.Metadata, objects []cge.Object, 
 	file.Close()
 
 	if _, err := exec.LookPath("gofmt"); err == nil {
-		exec.Command("gofmt", "-w", filepath.Join(dir, "events.go")).Start()
+		exec.Command("gofmt", "-w", filepath.Join(dir, "event_definitions.go")).Start()
 	}
 
 	return nil
@@ -67,8 +67,8 @@ func (g *Go) Generate(server bool, metadata cge.Metadata, objects []cge.Object, 
 func (g *Go) generateEvent(object cge.Object) {
 	g.builder.WriteString("\n")
 	g.generateComments("", object.Comments)
-	g.builder.WriteString(fmt.Sprintf("const Event%s cg.EventName = \"%s\"\n\n", snakeToPascal(object.Name), object.Name))
-	g.builder.WriteString(fmt.Sprintf("type Event%sData struct {\n", snakeToPascal(object.Name)))
+	g.builder.WriteString(fmt.Sprintf("const %sEvent cg.EventName = \"%s\"\n\n", snakeToPascal(object.Name), object.Name))
+	g.builder.WriteString(fmt.Sprintf("type %sEventData struct {\n", snakeToPascal(object.Name)))
 
 	g.generateProperties(object.Properties)
 
