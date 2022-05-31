@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
@@ -165,10 +166,14 @@ func main() {
 
 	for i, use := range useGenerator {
 		if use {
+			cli.Begin("Generating %s event definitions...", availableGenerators[i].displayName)
 			err = availableGenerators[i].generator.Generate(server, metadata, objects, output)
 			if err != nil {
 				cli.Error("Failed to generate %s events for %s", availableGenerators[i].displayName, err)
 			}
+			cli.Finish()
 		}
 	}
+
+	cli.Success("Successfully generated event definition files in '%s/'.", filepath.Clean(output))
 }
