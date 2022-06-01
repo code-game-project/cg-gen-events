@@ -78,9 +78,6 @@ func main() {
 	var output string
 	pflag.StringVarP(&output, "output", "o", ".", "The directory where every generated file will be put into. (Will be created if it does not exist.)")
 
-	var server bool
-	pflag.BoolVarP(&server, "server", "s", false, "Choose whether the file should be generated for a game server or client.")
-
 	pflag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage: %s [options] <cge-file>\n", os.Args[0])
 		fmt.Fprintf(os.Stderr, "\nOptions:\n")
@@ -172,7 +169,7 @@ func main() {
 	for i, use := range useGenerator {
 		if use {
 			cli.Begin("Generating %s event definitions...", availableGenerators[i].displayName)
-			err = availableGenerators[i].generator.Generate(server, metadata, objects, output)
+			err = availableGenerators[i].generator.Generate(metadata, objects, output)
 			if err != nil {
 				cli.Error("Failed to generate %s events for %s", availableGenerators[i].displayName, err)
 			}

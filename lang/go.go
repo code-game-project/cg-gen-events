@@ -1,6 +1,8 @@
 package lang
 
 import (
+	"bufio"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -16,7 +18,7 @@ type Go struct {
 	needsMathBig bool
 }
 
-func (g *Go) Generate(server bool, metadata cge.Metadata, objects []cge.Object, dir string) error {
+func (g *Go) Generate(metadata cge.Metadata, objects []cge.Object, dir string) error {
 	file, err := os.Create(filepath.Join(dir, "event_definitions.go"))
 	if err != nil {
 		return err
@@ -43,11 +45,7 @@ func (g *Go) Generate(server bool, metadata cge.Metadata, objects []cge.Object, 
 	}
 	file.WriteString(fmt.Sprintf("package %s\n\n", detectPackageName(dir, snakeToOneWord(metadata.Name))))
 
-	if server {
-		file.WriteString("import \"github.com/code-game-project/go-server/cg\"\n")
-	} else {
-		file.WriteString("import \"github.com/code-game-project/go-client/cg\"\n")
-	}
+	file.WriteString(fmt.Sprintf("import \"%s/cg\"\n", detectImportPath(dir, "github.com/code-game-project/go-client")))
 
 	if g.needsMathBig {
 		file.WriteString("import \"math/big\"\n")
@@ -159,4 +157,63 @@ func detectPackageName(dir, fallback string) string {
 	}
 
 	return name
+}
+
+func detectImportPath(dir, fallback string) string {
+	path, err := findGoModFile(dir)
+	if err != nil {
+		return fallback
+	}
+
+	file, err := os.Open(path)
+	if err != nil {
+		return fallback
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		if strings.Contains(line, "github.com/code-game-project/go-server") {
+			parts := strings.Split(line, " ")
+			for _, p := range parts {
+				if strings.HasPrefix(p, "github.com/code-game-project/go-server") {
+					return p
+				}
+			}
+		} else if strings.Contains(line, "github.com/code-game-project/go-client") {
+			parts := strings.Split(line, " ")
+			for _, p := range parts {
+				if strings.HasPrefix(p, "github.com/code-game-project/go-client") {
+					return p
+				}
+			}
+		}
+	}
+	return fallback
+}
+
+func findGoModFile(dir string) (string, error) {
+	currentDir, err := filepath.Abs(dir)
+	if err != nil {
+		return "", err
+	}
+
+	for {
+		entries, err := os.ReadDir(currentDir)
+		if err != nil {
+			return "", err
+		}
+		for _, entry := range entries {
+			if !entry.IsDir() && entry.Name() == "go.mod" {
+				return filepath.Join(currentDir, "go.mod"), nil
+			}
+		}
+
+		parent := filepath.Dir(filepath.Clean(currentDir))
+		if parent == currentDir {
+			return "", errors.New("not found")
+		}
+		currentDir = parent
+	}
 }
