@@ -19,12 +19,12 @@ cg-gen-events https://example.com/events
 
 Specify an output directory:
 ```sh
-cg-gen-events --output events/ my_game.cge
+cg-gen-events -o events/ my_game.cge
 ```
 
 Specify a list of languages as command line arguments instead of the interactive menu:
 ```sh
-cg-gen-events --languages go,typescript my_game.cge
+cg-gen-events -l go,typescript my_game.cge
 ```
 
 Use `--help` for a complete list of available options.
@@ -103,8 +103,6 @@ curl -L https://github.com/code-game-project/cg-gen-events/releases/latest/downl
 ### Other
 
 You can download a prebuilt binary file for your operating system on the [releases](https://github.com/code-game-project/cg-gen-events/releases) page.
-
-You might need to make the file executable before running it.
 
 ### Compiling from source
 
