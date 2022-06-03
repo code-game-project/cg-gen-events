@@ -12,8 +12,9 @@ import (
 const CGEVersion = "0.3"
 
 type Metadata struct {
-	Name     string
-	Comments []string
+	Name       string
+	Comments   []string
+	CGEVersion string
 }
 
 type ObjectType string
@@ -112,8 +113,9 @@ func (p *parser) parse() (Metadata, []Object, []error) {
 	}
 
 	return Metadata{
-		Name:     name,
-		Comments: comments,
+		Name:       name,
+		CGEVersion: version,
+		Comments:   comments,
 	}, p.objects, p.errors
 }
 

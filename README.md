@@ -34,6 +34,7 @@ Use `--help` for a complete list of available options.
 - Go
 - Markdown docs
 - TypeScript
+- JSON
 
 ## Installation
 

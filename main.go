@@ -39,6 +39,11 @@ var availableGenerators = []generator{
 		names:       []string{"ts", "typescript"},
 		generator:   &lang.TypeScript{},
 	},
+	{
+		displayName: "JSON",
+		names:       []string{"json"},
+		generator:   &lang.JSON{},
+	},
 }
 
 func openInputFile(filename string) (io.ReadCloser, error) {
