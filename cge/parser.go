@@ -59,7 +59,7 @@ type parser struct {
 	tokens              []Token
 	current             int
 	lines               [][]rune
-	identifiers         map[string]struct{}
+	identifiers         map[string]TokenType
 	accessedIdentifiers []Token
 	objects             []Object
 	errors              []error
@@ -74,7 +74,7 @@ func Parse(source io.Reader) (Metadata, []Object, []error) {
 	parser := &parser{
 		tokens:              tokens,
 		lines:               lines,
-		identifiers:         make(map[string]struct{}),
+		identifiers:         make(map[string]TokenType),
 		accessedIdentifiers: make([]Token, 0),
 		objects:             make([]Object, 0),
 		errors:              make([]error, 0),
@@ -107,7 +107,7 @@ func (p *parser) parse() (Metadata, []Object, []error) {
 	}
 
 	for _, id := range p.accessedIdentifiers {
-		if _, ok := p.identifiers[id.Lexeme]; !ok {
+		if identifierType, ok := p.identifiers[id.Lexeme]; !ok || identifierType == EVENT {
 			p.errors = append(p.errors, p.newErrorAt(fmt.Sprintf("Undefined identifier '%s'.", id.Lexeme), id))
 		}
 	}
@@ -168,7 +168,7 @@ func (p *parser) declaration() (Object, error) {
 	if _, ok := p.identifiers[name.Lexeme]; ok {
 		return Object{}, p.newErrorAt(fmt.Sprintf("'%s' already defined.", name.Lexeme), name)
 	}
-	p.identifiers[name.Lexeme] = struct{}{}
+	p.identifiers[name.Lexeme] = objectType
 
 	if !p.match(OPEN_CURLY) {
 		return Object{}, p.newError(fmt.Sprintf("Expect block after %s name.", strings.ToLower(string(objectType))))
@@ -306,7 +306,7 @@ func (p *parser) propertyType() (*PropertyType, error) {
 		if _, ok := p.identifiers[identifier.Lexeme]; ok {
 			return &PropertyType{}, p.newErrorAt(fmt.Sprintf("'%s' already defined.", identifier.Lexeme), identifier)
 		}
-		p.identifiers[identifier.Lexeme] = struct{}{}
+		p.identifiers[identifier.Lexeme] = propertyType.Type
 
 		if !p.match(OPEN_CURLY) {
 			return &PropertyType{}, p.newError("Expect block after type name.")
