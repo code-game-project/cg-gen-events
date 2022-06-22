@@ -14,6 +14,10 @@ func IsSnakeCaseIdentifier(text string) bool {
 	return true
 }
 
+func snakeToUppercase(text string) string {
+	return strings.ToUpper(text)
+}
+
 func snakeToCamel(text string) string {
 	parts := strings.Split(text, "_")
 	for i, p := range parts {

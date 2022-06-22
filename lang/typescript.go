@@ -88,21 +88,17 @@ func (g *TypeScript) generateType(object cge.Object) {
 }
 
 func (g *TypeScript) generateEnum(object cge.Object) {
-	valueComments := make([]string, len(object.Properties))
-	for i, p := range object.Properties {
-		valueComments[i] = fmt.Sprintf("- %s: %s", p.Name, strings.Join(p.Comments, " "))
-	}
-	object.Comments = append(object.Comments, valueComments...)
 	g.generateComments("", object.Comments)
-	if len(object.Properties) == 0 {
-		g.builder.WriteString(fmt.Sprintf("export type %s = undefined;\n", snakeToPascal(object.Name)))
-		return
+	g.builder.WriteString(fmt.Sprintf("export enum %s {\n", snakeToPascal(object.Name)))
+	for i, p := range object.Properties {
+		g.generateComments("  ", p.Comments)
+		g.builder.WriteString(fmt.Sprintf("  %s = \"%s\"", snakeToUppercase(p.Name), p.Name))
+		if i < len(object.Properties)-1 {
+			g.builder.WriteString(",")
+		}
+		g.builder.WriteString("\n")
 	}
-	g.builder.WriteString(fmt.Sprintf("export type %s = \"%s\"", snakeToPascal(object.Name), object.Properties[0].Name))
-	for i := 1; i < len(object.Properties); i++ {
-		g.builder.WriteString(fmt.Sprintf(" | \"%s\"", object.Properties[i].Name))
-	}
-	g.builder.WriteString(";\n")
+	g.builder.WriteString("}\n")
 }
 
 func (g *TypeScript) generateProperties(properties []cge.Property, indentSize int) {
