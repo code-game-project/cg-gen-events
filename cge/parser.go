@@ -56,13 +56,15 @@ func (o Property) String() string {
 }
 
 type parser struct {
-	tokens              []Token
-	current             int
-	lines               [][]rune
-	identifiers         map[string]TokenType
-	accessedIdentifiers []Token
-	objects             []Object
-	errors              []error
+	tokens                  []Token
+	current                 int
+	lines                   [][]rune
+	commands                map[string]struct{}
+	events                  map[string]struct{}
+	types                   map[string]struct{}
+	accessedTypeIdentifiers []Token
+	objects                 []Object
+	errors                  []error
 }
 
 func Parse(source io.Reader) (Metadata, []Object, []error) {
@@ -72,12 +74,14 @@ func Parse(source io.Reader) (Metadata, []Object, []error) {
 	}
 
 	parser := &parser{
-		tokens:              tokens,
-		lines:               lines,
-		identifiers:         make(map[string]TokenType),
-		accessedIdentifiers: make([]Token, 0),
-		objects:             make([]Object, 0),
-		errors:              make([]error, 0),
+		tokens:                  tokens,
+		lines:                   lines,
+		commands:                make(map[string]struct{}),
+		events:                  make(map[string]struct{}),
+		types:                   make(map[string]struct{}),
+		accessedTypeIdentifiers: make([]Token, 0),
+		objects:                 make([]Object, 0),
+		errors:                  make([]error, 0),
 	}
 
 	return parser.parse()
@@ -106,9 +110,9 @@ func (p *parser) parse() (Metadata, []Object, []error) {
 		p.objects = append(p.objects, decl)
 	}
 
-	for _, id := range p.accessedIdentifiers {
-		if identifierType, ok := p.identifiers[id.Lexeme]; !ok || identifierType == EVENT {
-			p.errors = append(p.errors, p.newErrorAt(fmt.Sprintf("Undefined identifier '%s'.", id.Lexeme), id))
+	for _, id := range p.accessedTypeIdentifiers {
+		if _, ok := p.types[id.Lexeme]; !ok {
+			p.errors = append(p.errors, p.newErrorAt(fmt.Sprintf("Undefined type '%s'.", id.Lexeme), id))
 		}
 	}
 
@@ -165,10 +169,23 @@ func (p *parser) declaration() (Object, error) {
 	}
 	name := p.previous()
 
-	if _, ok := p.identifiers[name.Lexeme]; ok {
-		return Object{}, p.newErrorAt(fmt.Sprintf("'%s' already defined.", name.Lexeme), name)
+	switch objectType {
+	case COMMAND:
+		if _, ok := p.commands[name.Lexeme]; ok {
+			return Object{}, p.newErrorAt(fmt.Sprintf("Command '%s' already defined.", name.Lexeme), name)
+		}
+		p.commands[name.Lexeme] = struct{}{}
+	case EVENT:
+		if _, ok := p.events[name.Lexeme]; ok {
+			return Object{}, p.newErrorAt(fmt.Sprintf("Event '%s' already defined.", name.Lexeme), name)
+		}
+		p.events[name.Lexeme] = struct{}{}
+	case TYPE, ENUM:
+		if _, ok := p.types[name.Lexeme]; ok {
+			return Object{}, p.newErrorAt(fmt.Sprintf("Type '%s' already defined.", name.Lexeme), name)
+		}
+		p.types[name.Lexeme] = struct{}{}
 	}
-	p.identifiers[name.Lexeme] = objectType
 
 	if !p.match(OPEN_CURLY) {
 		return Object{}, p.newError(fmt.Sprintf("Expect block after %s name.", strings.ToLower(string(objectType))))
@@ -296,17 +313,17 @@ func (p *parser) propertyType() (*PropertyType, error) {
 	var generic *PropertyType
 
 	if propertyType.Type == IDENTIFIER {
-		p.accessedIdentifiers = append(p.accessedIdentifiers, propertyType)
+		p.accessedTypeIdentifiers = append(p.accessedTypeIdentifiers, propertyType)
 	} else if propertyType.Type == TYPE || propertyType.Type == ENUM {
 		if !p.match(IDENTIFIER) {
 			return &PropertyType{}, p.newError(fmt.Sprintf("Expect identifier after 'type' keyword."))
 		}
 
 		identifier := p.previous()
-		if _, ok := p.identifiers[identifier.Lexeme]; ok {
-			return &PropertyType{}, p.newErrorAt(fmt.Sprintf("'%s' already defined.", identifier.Lexeme), identifier)
+		if _, ok := p.types[identifier.Lexeme]; ok {
+			return &PropertyType{}, p.newErrorAt(fmt.Sprintf("Type '%s' already defined.", identifier.Lexeme), identifier)
 		}
-		p.identifiers[identifier.Lexeme] = propertyType.Type
+		p.types[identifier.Lexeme] = struct{}{}
 
 		if !p.match(OPEN_CURLY) {
 			return &PropertyType{}, p.newError("Expect block after type name.")
