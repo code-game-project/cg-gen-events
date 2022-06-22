@@ -10,12 +10,19 @@ import (
 )
 
 type jsonObject struct {
-	GameName   string      `json:"game_name"`
-	CGEVersion string      `json:"cge_version"`
-	Comments   []string    `json:"comments,omitempty"`
-	Events     []jsonEvent `json:"events"`
-	Types      []jsonType  `json:"types"`
-	Enums      []jsonEnum  `json:"enums"`
+	GameName   string        `json:"game_name"`
+	CGEVersion string        `json:"cge_version"`
+	Comments   []string      `json:"comments,omitempty"`
+	Commands   []jsonCommand `json:"commands"`
+	Events     []jsonEvent   `json:"events"`
+	Types      []jsonType    `json:"types"`
+	Enums      []jsonEnum    `json:"enums"`
+}
+
+type jsonCommand struct {
+	Name       string         `json:"name"`
+	Comments   []string       `json:"comments,omitempty"`
+	Properties []jsonProperty `json:"properties"`
 }
 
 type jsonEvent struct {
@@ -76,7 +83,9 @@ func (j *JSON) Generate(metadata cge.Metadata, objects []cge.Object, dir string)
 	}
 
 	for _, object := range objects {
-		if object.Type == cge.EVENT {
+		if object.Type == cge.COMMAND {
+			j.generateCommand(object)
+		} else if object.Type == cge.EVENT {
 			j.generateEvent(object)
 		} else if object.Type == cge.TYPE {
 			j.generateType(object)
@@ -86,6 +95,14 @@ func (j *JSON) Generate(metadata cge.Metadata, objects []cge.Object, dir string)
 	}
 
 	return json.NewEncoder(file).Encode(j.json)
+}
+
+func (j *JSON) generateCommand(object cge.Object) {
+	j.json.Commands = append(j.json.Commands, jsonCommand{
+		Name:       object.Name,
+		Comments:   object.Comments,
+		Properties: j.generateProperties(object.Properties),
+	})
 }
 
 func (j *JSON) generateEvent(object cge.Object) {

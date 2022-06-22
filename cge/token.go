@@ -5,6 +5,7 @@ type TokenType string
 const (
 	NAME    TokenType = "NAME"
 	VERSION TokenType = "VERSION"
+	COMMAND TokenType = "COMMAND"
 	EVENT   TokenType = "EVENT"
 	TYPE    TokenType = "TYPE"
 	ENUM    TokenType = "ENUM"

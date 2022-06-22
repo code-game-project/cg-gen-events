@@ -27,7 +27,9 @@ func (g *Go) Generate(metadata cge.Metadata, objects []cge.Object, dir string) e
 	g.builder = strings.Builder{}
 
 	for _, object := range objects {
-		if object.Type == cge.EVENT {
+		if object.Type == cge.COMMAND {
+			g.generateCommand(object)
+		} else if object.Type == cge.EVENT {
 			g.generateEvent(object)
 		} else if object.Type == cge.TYPE {
 			g.generateType(object)
@@ -60,6 +62,17 @@ func (g *Go) Generate(metadata cge.Metadata, objects []cge.Object, dir string) e
 	}
 
 	return nil
+}
+
+func (g *Go) generateCommand(object cge.Object) {
+	g.builder.WriteString("\n")
+	g.generateComments("", object.Comments)
+	g.builder.WriteString(fmt.Sprintf("const %sCmd cg.CommandName = \"%s\"\n\n", snakeToPascal(object.Name), object.Name))
+	g.builder.WriteString(fmt.Sprintf("type %sCmdData struct {\n", snakeToPascal(object.Name)))
+
+	g.generateProperties(object.Properties)
+
+	g.builder.WriteString("}\n")
 }
 
 func (g *Go) generateEvent(object cge.Object) {

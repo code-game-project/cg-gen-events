@@ -1,8 +1,9 @@
 ============= CGE Grammar =============
 
 metadata -> name IDENTIFIER version NUMBER '.' NUMBER
-cge -> metadata (event|type|enum)*
+cge -> metadata (command|event|type|enum)*
 event -> 'event' IDENTIFIER block
+command -> 'command' IDENTIFIER block
 type -> 'type' IDENTIFIER block
 type -> 'enum' IDENTIFIER enumBlock
 property -> IDENTIFIER ':' propertyType

@@ -10,9 +10,10 @@ import (
 )
 
 type MarkdownDocs struct {
-	eventTextBuilder strings.Builder
-	typeTextBuilder  strings.Builder
-	enumTextBuilder  strings.Builder
+	commandTextBuilder strings.Builder
+	eventTextBuilder   strings.Builder
+	typeTextBuilder    strings.Builder
+	enumTextBuilder    strings.Builder
 }
 
 func (m *MarkdownDocs) Generate(metadata cge.Metadata, objects []cge.Object, dir string) error {
@@ -22,7 +23,9 @@ func (m *MarkdownDocs) Generate(metadata cge.Metadata, objects []cge.Object, dir
 	}
 
 	for _, object := range objects {
-		if object.Type == cge.EVENT {
+		if object.Type == cge.COMMAND {
+			m.generateCommand(object)
+		} else if object.Type == cge.EVENT {
 			m.generateEvent(object)
 		} else if object.Type == cge.TYPE {
 			m.generateType(object)
@@ -41,6 +44,10 @@ func (m *MarkdownDocs) Generate(metadata cge.Metadata, objects []cge.Object, dir
 		file.WriteString("\n")
 	}
 
+	file.WriteString(m.commandTextBuilder.String())
+
+	file.WriteString("\n")
+
 	file.WriteString(m.eventTextBuilder.String())
 
 	file.WriteString("\n")
@@ -54,6 +61,24 @@ func (m *MarkdownDocs) Generate(metadata cge.Metadata, objects []cge.Object, dir
 	file.Close()
 
 	return nil
+}
+
+func (m *MarkdownDocs) generateCommand(object cge.Object) {
+	if m.commandTextBuilder.Len() == 0 {
+		m.commandTextBuilder.WriteString("## Commands\n")
+	}
+	m.commandTextBuilder.WriteString("\n")
+	m.commandTextBuilder.WriteString(fmt.Sprintf("### %s\n\n", object.Name))
+
+	for _, comment := range object.Comments {
+		m.commandTextBuilder.WriteString(comment + "\n")
+	}
+
+	if len(object.Comments) > 0 {
+		m.commandTextBuilder.WriteString("\n")
+	}
+
+	m.generateProperties(&m.commandTextBuilder, object.Properties)
 }
 
 func (m *MarkdownDocs) generateEvent(object cge.Object) {

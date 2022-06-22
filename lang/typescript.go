@@ -14,7 +14,7 @@ type TypeScript struct {
 }
 
 func (g *TypeScript) Generate(metadata cge.Metadata, objects []cge.Object, dir string) error {
-	file, err := os.Create(filepath.Join(dir, snakeToKebab(metadata.Name)+"-events.d.ts"))
+	file, err := os.Create(filepath.Join(dir, "event_definitions.d.ts"))
 	if err != nil {
 		return err
 	}
@@ -31,8 +31,12 @@ func (g *TypeScript) Generate(metadata cge.Metadata, objects []cge.Object, dir s
 	}
 
 	eventNames := make([]string, 0)
+	commandNames := make([]string, 0)
 	for _, object := range objects {
-		if object.Type == cge.EVENT {
+		if object.Type == cge.COMMAND {
+			g.generateCommand(object)
+			commandNames = append(commandNames, object.Name)
+		} else if object.Type == cge.EVENT {
 			g.generateEvent(object)
 			eventNames = append(eventNames, object.Name)
 		} else if object.Type == cge.TYPE {
@@ -43,16 +47,29 @@ func (g *TypeScript) Generate(metadata cge.Metadata, objects []cge.Object, dir s
 		g.builder.WriteString("\n")
 	}
 
-	g.generateUnionType(eventNames)
+	g.generateUnionTypes(commandNames, eventNames)
 
 	file.WriteString(g.builder.String())
 
 	return nil
 }
 
+func (g *TypeScript) generateCommand(object cge.Object) {
+	g.generateComments("", object.Comments)
+	g.builder.WriteString(fmt.Sprintf("export interface %sCmd {\n", snakeToPascal(object.Name)))
+	if len(object.Properties) > 0 {
+		g.builder.WriteString(fmt.Sprintf("  name: \"%s\",\n  data: {\n", object.Name))
+		g.generateProperties(object.Properties, 2)
+		g.builder.WriteString("  },\n")
+	} else {
+		g.builder.WriteString(fmt.Sprintf("  name: \"%s\",\n  data?: undefined,\n", object.Name))
+	}
+	g.builder.WriteString("}\n")
+}
+
 func (g *TypeScript) generateEvent(object cge.Object) {
 	g.generateComments("", object.Comments)
-	g.builder.WriteString(fmt.Sprintf("export interface %s {\n", snakeToPascal(object.Name)))
+	g.builder.WriteString(fmt.Sprintf("export interface %sEvent {\n", snakeToPascal(object.Name)))
 	if len(object.Properties) > 0 {
 		g.builder.WriteString(fmt.Sprintf("  name: \"%s\",\n  data: {\n", object.Name))
 		g.generateProperties(object.Properties, 2)
@@ -106,17 +123,26 @@ func (g *TypeScript) generateComments(indent string, comments []string) {
 	}
 }
 
-func (g *TypeScript) generateUnionType(eventNames []string) {
-	if len(eventNames) == 0 {
-		g.builder.WriteString(fmt.Sprintf("export type Events = undefined;\n"))
-		return
+func (g *TypeScript) generateUnionTypes(commandNames, eventNames []string) {
+	if len(commandNames) == 0 {
+		g.builder.WriteString(fmt.Sprintf("export type Commands = undefined;\n"))
+	} else {
+		g.builder.WriteString(fmt.Sprintf("export type Commands = %sCmd", snakeToPascal(commandNames[0])))
+		for i := 1; i < len(commandNames); i++ {
+			g.builder.WriteString(fmt.Sprintf(" | %sCmd", snakeToPascal(commandNames[i])))
+		}
+		g.builder.WriteString(";\n")
 	}
 
-	g.builder.WriteString(fmt.Sprintf("export type Events = %s", snakeToPascal(eventNames[0])))
-	for i := 1; i < len(eventNames); i++ {
-		g.builder.WriteString(fmt.Sprintf(" | %s", snakeToPascal(eventNames[i])))
+	if len(eventNames) == 0 {
+		g.builder.WriteString(fmt.Sprintf("export type Events = undefined;\n"))
+	} else {
+		g.builder.WriteString(fmt.Sprintf("export type Events = %sEvent", snakeToPascal(eventNames[0])))
+		for i := 1; i < len(eventNames); i++ {
+			g.builder.WriteString(fmt.Sprintf(" | %sEvent", snakeToPascal(eventNames[i])))
+		}
+		g.builder.WriteString(";\n")
 	}
-	g.builder.WriteString(";\n")
 }
 
 func (g *TypeScript) tsType(tokenType cge.TokenType, lexeme string, generic *cge.PropertyType) string {

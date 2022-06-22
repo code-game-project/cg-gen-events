@@ -112,6 +112,8 @@ func (s *scanner) identifier() error {
 		s.addToken(VERSION)
 	case "event":
 		s.addToken(EVENT)
+	case "command":
+		s.addToken(COMMAND)
 	case "type":
 		s.addToken(TYPE)
 	case "enum":

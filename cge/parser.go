@@ -9,7 +9,7 @@ import (
 	"github.com/code-game-project/codegame-cli/cli"
 )
 
-const CGEVersion = "0.3"
+const CGEVersion = "0.4"
 
 type Metadata struct {
 	Name       string
@@ -154,8 +154,8 @@ func (p *parser) declaration() (Object, error) {
 		comments = append(comments, p.previous().Lexeme)
 	}
 
-	if !p.match(EVENT, TYPE, ENUM) {
-		return Object{}, p.newError("Expect event or type declaration.")
+	if !p.match(COMMAND, EVENT, TYPE, ENUM) {
+		return Object{}, p.newError("Expect command, event, type or enum declaration.")
 	}
 
 	objectType := p.previous().Type
