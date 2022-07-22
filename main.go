@@ -48,11 +48,13 @@ var availableGenerators = []generator{
 
 func openInputFile(filename string) (io.ReadCloser, error) {
 	if strings.HasPrefix(pflag.Arg(0), "http://") || strings.HasPrefix(pflag.Arg(0), "https://") {
-		if !strings.HasSuffix(filename, "/events") && !strings.HasSuffix(filename, ".cge") {
-			if strings.HasSuffix(filename, "/") {
-				filename = filename + "events"
+		if !strings.HasSuffix(filename, "/api/events") && !strings.HasSuffix(filename, ".cge") {
+			if strings.HasSuffix(filename, "/api") {
+				filename += "/events"
+			} else if strings.HasSuffix(filename, "/") {
+				filename += "api/events"
 			} else {
-				filename = filename + "/events"
+				filename += "/api/events"
 			}
 		}
 		resp, err := http.Get(filename)
@@ -60,7 +62,7 @@ func openInputFile(filename string) (io.ReadCloser, error) {
 			return nil, fmt.Errorf("Failed to reach url '%s': %s", filename, err)
 		}
 		if resp.StatusCode != http.StatusOK {
-			return nil, fmt.Errorf("Failed to download CGE file from url '%s': %s", filename, err)
+			return nil, fmt.Errorf("Failed to download CGE file from url '%s'", filename)
 		}
 		if !strings.Contains(resp.Header.Get("Content-Type"), "text/plain") {
 			return nil, fmt.Errorf("Unsupported content type at '%s': expected %s, got %s\n", filename, "text/plain", resp.Header.Get("Content-Type"))
