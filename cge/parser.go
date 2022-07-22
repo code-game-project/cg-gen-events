@@ -398,9 +398,9 @@ func (p *parser) synchronize() {
 	p.current++
 	for p.peek().Type != EOF {
 		switch p.peek().Type {
-		case EVENT, TYPE, CLOSE_CURLY:
+		case EVENT, TYPE, ENUM:
 			return
-		case COMMA:
+		case CLOSE_CURLY:
 			p.current++
 			return
 		}
