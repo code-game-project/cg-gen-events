@@ -11,9 +11,9 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/AlecAivazis/survey/v2/terminal"
+	"github.com/Bananenpro/cli"
 	"github.com/code-game-project/cg-gen-events/cge"
 	"github.com/code-game-project/cg-gen-events/lang"
-	"github.com/code-game-project/codegame-cli/cli"
 	"github.com/spf13/pflag"
 )
 
@@ -175,12 +175,12 @@ func main() {
 
 	for i, use := range useGenerator {
 		if use {
-			cli.Begin("Generating %s event definitions...", availableGenerators[i].displayName)
+			cli.BeginLoading("Generating %s event definitions...", availableGenerators[i].displayName)
 			err = availableGenerators[i].generator.Generate(metadata, objects, output)
 			if err != nil {
 				cli.Error("Failed to generate %s events for %s", availableGenerators[i].displayName, err)
 			}
-			cli.Finish()
+			cli.FinishLoading()
 		}
 	}
 

@@ -22,6 +22,6 @@ func generateErrorText(message string, lineText []rune, line, columnStart, colum
 	errorLine = errorLine + string(lineText[columnEnd:])
 
 	text := fmt.Sprintf("\x1b[2m[%d]  \x1b[0m%s", line+1, errorLine)
-	text = fmt.Sprintf("%s%s\n%s\n%s", fmt.Sprintf("\x1b[31mERROR\x1b[0m [%d:%d]: %s\n", line+1, columnStart+1, message), strings.Repeat("-", 30), text, strings.Repeat("-", 30))
+	text = fmt.Sprintf("%s%s\n%s\n%s", fmt.Sprintf("[%d:%d] %s\n", line+1, columnStart+1, message), strings.Repeat("-", 30), text, strings.Repeat("-", 30))
 	return text
 }

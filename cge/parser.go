@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/code-game-project/codegame-cli/cli"
+	"github.com/Bananenpro/cli"
 )
 
 const CGEVersion = "0.4"
