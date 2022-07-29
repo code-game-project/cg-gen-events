@@ -119,7 +119,7 @@ go build .
 
 ## License
 
-Copyright (c) 2022 CodeGame Contributors (https://code-game.org/contributors)
+Copyright (c) 2022 Julian Hofmann
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
