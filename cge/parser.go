@@ -62,6 +62,7 @@ type parser struct {
 	commands                map[string]struct{}
 	events                  map[string]struct{}
 	types                   map[string]struct{}
+	config                  bool
 	accessedTypeIdentifiers []Token
 	objects                 []Object
 	errors                  []error
@@ -158,14 +159,21 @@ func (p *parser) declaration() (Object, error) {
 		comments = append(comments, p.previous().Lexeme)
 	}
 
-	if !p.match(COMMAND, EVENT, TYPE, ENUM) {
-		return Object{}, p.newError("Expect command, event, type or enum declaration.")
+	if !p.match(CONFIG, COMMAND, EVENT, TYPE, ENUM) {
+		return Object{}, p.newError("Expect config, command, event, type or enum declaration.")
 	}
 
 	objectType := p.previous().Type
 
-	if !p.match(IDENTIFIER) {
-		return Object{}, p.newError(fmt.Sprintf("Expect identifier after '%s' keyword.", strings.ToLower(string(objectType))))
+	if objectType == CONFIG {
+		if p.config {
+			return Object{}, p.newErrorAt("Only one config object is allowed.", p.previous())
+		}
+		p.config = true
+	} else {
+		if !p.match(IDENTIFIER) {
+			return Object{}, p.newError(fmt.Sprintf("Expect identifier after '%s' keyword.", strings.ToLower(string(objectType))))
+		}
 	}
 	name := p.previous()
 
@@ -188,7 +196,11 @@ func (p *parser) declaration() (Object, error) {
 	}
 
 	if !p.match(OPEN_CURLY) {
-		return Object{}, p.newError(fmt.Sprintf("Expect block after %s name.", strings.ToLower(string(objectType))))
+		if objectType == CONFIG {
+			return Object{}, p.newError(fmt.Sprintf("Expect block after %s keyword.", strings.ToLower(string(objectType))))
+		} else {
+			return Object{}, p.newError(fmt.Sprintf("Expect block after %s name.", strings.ToLower(string(objectType))))
+		}
 	}
 
 	var properties []Property

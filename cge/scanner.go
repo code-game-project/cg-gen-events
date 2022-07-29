@@ -110,6 +110,8 @@ func (s *scanner) identifier() error {
 		s.addToken(NAME)
 	case "version":
 		s.addToken(VERSION)
+	case "config":
+		s.addToken(CONFIG)
 	case "event":
 		s.addToken(EVENT)
 	case "command":

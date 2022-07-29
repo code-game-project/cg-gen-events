@@ -10,6 +10,7 @@ import (
 )
 
 type MarkdownDocs struct {
+	configTextBuilder  strings.Builder
 	commandTextBuilder strings.Builder
 	eventTextBuilder   strings.Builder
 	typeTextBuilder    strings.Builder
@@ -23,7 +24,9 @@ func (m *MarkdownDocs) Generate(metadata cge.Metadata, objects []cge.Object, dir
 	}
 
 	for _, object := range objects {
-		if object.Type == cge.COMMAND {
+		if object.Type == cge.CONFIG {
+			m.generateConfig(object)
+		} else if object.Type == cge.COMMAND {
 			m.generateCommand(object)
 		} else if object.Type == cge.EVENT {
 			m.generateEvent(object)
@@ -44,6 +47,10 @@ func (m *MarkdownDocs) Generate(metadata cge.Metadata, objects []cge.Object, dir
 		file.WriteString("\n")
 	}
 
+	file.WriteString(m.configTextBuilder.String())
+
+	file.WriteString("\n")
+
 	file.WriteString(m.commandTextBuilder.String())
 
 	file.WriteString("\n")
@@ -61,6 +68,20 @@ func (m *MarkdownDocs) Generate(metadata cge.Metadata, objects []cge.Object, dir
 	file.Close()
 
 	return nil
+}
+
+func (m *MarkdownDocs) generateConfig(object cge.Object) {
+	m.configTextBuilder.WriteString("## Game Config\n\n")
+
+	for _, comment := range object.Comments {
+		m.configTextBuilder.WriteString(comment + "\n")
+	}
+
+	if len(object.Comments) > 0 {
+		m.configTextBuilder.WriteString("\n")
+	}
+
+	m.generateProperties(&m.configTextBuilder, object.Properties)
 }
 
 func (m *MarkdownDocs) generateCommand(object cge.Object) {

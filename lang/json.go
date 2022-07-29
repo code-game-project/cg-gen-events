@@ -10,29 +10,18 @@ import (
 )
 
 type jsonObject struct {
-	GameName   string        `json:"game_name"`
-	CGEVersion string        `json:"cge_version"`
-	Comments   []string      `json:"comments,omitempty"`
-	Commands   []jsonCommand `json:"commands"`
-	Events     []jsonEvent   `json:"events"`
-	Types      []jsonType    `json:"types"`
-	Enums      []jsonEnum    `json:"enums"`
-}
-
-type jsonCommand struct {
-	Name       string         `json:"name"`
-	Comments   []string       `json:"comments,omitempty"`
-	Properties []jsonProperty `json:"properties"`
-}
-
-type jsonEvent struct {
-	Name       string         `json:"name"`
-	Comments   []string       `json:"comments,omitempty"`
-	Properties []jsonProperty `json:"properties"`
+	GameName   string     `json:"game_name"`
+	CGEVersion string     `json:"cge_version"`
+	Comments   []string   `json:"comments,omitempty"`
+	Config     jsonType   `json:"config"`
+	Commands   []jsonType `json:"commands"`
+	Events     []jsonType `json:"events"`
+	Types      []jsonType `json:"types"`
+	Enums      []jsonEnum `json:"enums"`
 }
 
 type jsonType struct {
-	Name       string         `json:"name"`
+	Name       string         `json:"name,omitempty"`
 	Comments   []string       `json:"comments,omitempty"`
 	Properties []jsonProperty `json:"properties"`
 }
@@ -77,13 +66,16 @@ func (j *JSON) Generate(metadata cge.Metadata, objects []cge.Object, dir string)
 		GameName:   metadata.Name,
 		CGEVersion: metadata.CGEVersion,
 		Comments:   metadata.Comments,
-		Events:     make([]jsonEvent, 0, len(objects)/3),
-		Types:      make([]jsonType, 0, len(objects)/3),
-		Enums:      make([]jsonEnum, 0, len(objects)/3),
+		Commands:   make([]jsonType, 0),
+		Events:     make([]jsonType, 0),
+		Types:      make([]jsonType, 0),
+		Enums:      make([]jsonEnum, 0),
 	}
 
 	for _, object := range objects {
-		if object.Type == cge.COMMAND {
+		if object.Type == cge.CONFIG {
+			j.generateConfig(object)
+		} else if object.Type == cge.COMMAND {
 			j.generateCommand(object)
 		} else if object.Type == cge.EVENT {
 			j.generateEvent(object)
@@ -97,8 +89,15 @@ func (j *JSON) Generate(metadata cge.Metadata, objects []cge.Object, dir string)
 	return json.NewEncoder(file).Encode(j.json)
 }
 
+func (j *JSON) generateConfig(object cge.Object) {
+	j.json.Config = jsonType{
+		Comments:   object.Comments,
+		Properties: j.generateProperties(object.Properties),
+	}
+}
+
 func (j *JSON) generateCommand(object cge.Object) {
-	j.json.Commands = append(j.json.Commands, jsonCommand{
+	j.json.Commands = append(j.json.Commands, jsonType{
 		Name:       object.Name,
 		Comments:   object.Comments,
 		Properties: j.generateProperties(object.Properties),
@@ -106,7 +105,7 @@ func (j *JSON) generateCommand(object cge.Object) {
 }
 
 func (j *JSON) generateEvent(object cge.Object) {
-	j.json.Events = append(j.json.Events, jsonEvent{
+	j.json.Events = append(j.json.Events, jsonType{
 		Name:       object.Name,
 		Comments:   object.Comments,
 		Properties: j.generateProperties(object.Properties),

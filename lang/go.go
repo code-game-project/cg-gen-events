@@ -27,7 +27,9 @@ func (g *Go) Generate(metadata cge.Metadata, objects []cge.Object, dir string) e
 	g.builder = strings.Builder{}
 
 	for _, object := range objects {
-		if object.Type == cge.COMMAND {
+		if object.Type == cge.CONFIG {
+			g.generateConfig(object)
+		} else if object.Type == cge.COMMAND {
 			g.generateCommand(object)
 		} else if object.Type == cge.EVENT {
 			g.generateEvent(object)
@@ -62,6 +64,16 @@ func (g *Go) Generate(metadata cge.Metadata, objects []cge.Object, dir string) e
 	}
 
 	return nil
+}
+
+func (g *Go) generateConfig(object cge.Object) {
+	g.builder.WriteString("\n")
+	g.generateComments("", object.Comments)
+	g.builder.WriteString("type GameConfig struct {\n")
+
+	g.generateProperties(object.Properties)
+
+	g.builder.WriteString("}\n")
 }
 
 func (g *Go) generateCommand(object cge.Object) {

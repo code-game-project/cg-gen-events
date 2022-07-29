@@ -33,7 +33,9 @@ func (g *TypeScript) Generate(metadata cge.Metadata, objects []cge.Object, dir s
 	eventNames := make([]string, 0)
 	commandNames := make([]string, 0)
 	for _, object := range objects {
-		if object.Type == cge.COMMAND {
+		if object.Type == cge.CONFIG {
+			g.generateConfig(object)
+		} else if object.Type == cge.COMMAND {
 			g.generateCommand(object)
 			commandNames = append(commandNames, object.Name)
 		} else if object.Type == cge.EVENT {
@@ -52,6 +54,13 @@ func (g *TypeScript) Generate(metadata cge.Metadata, objects []cge.Object, dir s
 	file.WriteString(g.builder.String())
 
 	return nil
+}
+
+func (g *TypeScript) generateConfig(object cge.Object) {
+	g.generateComments("", object.Comments)
+	g.builder.WriteString("export interface GameConfig {\n")
+	g.generateProperties(object.Properties, 1)
+	g.builder.WriteString("}\n")
 }
 
 func (g *TypeScript) generateCommand(object cge.Object) {
