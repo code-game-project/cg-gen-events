@@ -117,6 +117,12 @@ func (p *parser) parse() (Metadata, []Object, []error) {
 		}
 	}
 
+	if !p.config {
+		p.objects = append(p.objects, Object{
+			Type: CONFIG,
+		})
+	}
+
 	return Metadata{
 		Name:       name,
 		CGEVersion: version,
