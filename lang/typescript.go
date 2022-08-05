@@ -59,7 +59,7 @@ func (g *TypeScript) Generate(metadata cge.Metadata, objects []cge.Object, dir s
 func (g *TypeScript) generateConfig(object cge.Object) {
 	g.generateComments("", object.Comments)
 	g.builder.WriteString("export interface GameConfig {\n")
-	g.generateProperties(object.Properties, 1)
+	g.generateProperties(object.Properties, 1, true)
 	g.builder.WriteString("}\n")
 }
 
@@ -68,7 +68,7 @@ func (g *TypeScript) generateCommand(object cge.Object) {
 	g.builder.WriteString(fmt.Sprintf("export interface %sCmd {\n", snakeToPascal(object.Name)))
 	if len(object.Properties) > 0 {
 		g.builder.WriteString(fmt.Sprintf("  name: \"%s\",\n  data: {\n", object.Name))
-		g.generateProperties(object.Properties, 2)
+		g.generateProperties(object.Properties, 2, false)
 		g.builder.WriteString("  },\n")
 	} else {
 		g.builder.WriteString(fmt.Sprintf("  name: \"%s\",\n  data?: undefined,\n", object.Name))
@@ -81,7 +81,7 @@ func (g *TypeScript) generateEvent(object cge.Object) {
 	g.builder.WriteString(fmt.Sprintf("export interface %sEvent {\n", snakeToPascal(object.Name)))
 	if len(object.Properties) > 0 {
 		g.builder.WriteString(fmt.Sprintf("  name: \"%s\",\n  data: {\n", object.Name))
-		g.generateProperties(object.Properties, 2)
+		g.generateProperties(object.Properties, 2, false)
 		g.builder.WriteString("  },\n")
 	} else {
 		g.builder.WriteString(fmt.Sprintf("  name: \"%s\",\n  data?: undefined,\n", object.Name))
@@ -92,7 +92,7 @@ func (g *TypeScript) generateEvent(object cge.Object) {
 func (g *TypeScript) generateType(object cge.Object) {
 	g.generateComments("", object.Comments)
 	g.builder.WriteString(fmt.Sprintf("export interface %s {\n", snakeToPascal(object.Name)))
-	g.generateProperties(object.Properties, 1)
+	g.generateProperties(object.Properties, 1, false)
 	g.builder.WriteString("}\n")
 }
 
@@ -110,11 +110,15 @@ func (g *TypeScript) generateEnum(object cge.Object) {
 	g.builder.WriteString("}\n")
 }
 
-func (g *TypeScript) generateProperties(properties []cge.Property, indentSize int) {
+func (g *TypeScript) generateProperties(properties []cge.Property, indentSize int, optional bool) {
 	indent := strings.Repeat("  ", indentSize)
 	for _, property := range properties {
 		g.generateComments("    ", property.Comments)
-		g.builder.WriteString(fmt.Sprintf("%s%s: %s,\n", indent, property.Name, g.tsType(property.Type.Token.Type, property.Type.Token.Lexeme, property.Type.Generic)))
+		var questionMark string
+		if optional {
+			questionMark = "?"
+		}
+		g.builder.WriteString(fmt.Sprintf("%s%s%s: %s,\n", indent, property.Name, questionMark, g.tsType(property.Type.Token.Type, property.Type.Token.Lexeme, property.Type.Generic)))
 	}
 }
 
