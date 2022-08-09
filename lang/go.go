@@ -26,16 +26,20 @@ func (g *Go) Generate(metadata cge.Metadata, objects []cge.Object, dir string) e
 
 	g.builder = strings.Builder{}
 
+	needsImport := false
+
 	for _, object := range objects {
 		if object.Type == cge.CONFIG {
 			g.generateConfig(object)
 		} else if object.Type == cge.COMMAND {
+			needsImport = true
 			g.generateCommand(object)
 		} else if object.Type == cge.EVENT {
+			needsImport = true
 			g.generateEvent(object)
 		} else if object.Type == cge.TYPE {
 			g.generateType(object)
-		} else {
+		} else if object.Type == cge.ENUM {
 			g.generateEnum(object)
 		}
 	}
@@ -47,9 +51,11 @@ func (g *Go) Generate(metadata cge.Metadata, objects []cge.Object, dir string) e
 		}
 		file.WriteString("*/\n")
 	}
-	file.WriteString(fmt.Sprintf("package %s\n\n", detectPackageName(dir, snakeToOneWord(metadata.Name))))
+	fmt.Fprintf(file, "package %s\n", detectPackageName(dir, snakeToOneWord(metadata.Name)))
 
-	file.WriteString(fmt.Sprintf("import \"%s/cg\"\n", detectImportPath(dir, "github.com/code-game-project/go-client")))
+	if needsImport {
+		fmt.Fprintf(file, "\nimport \"%s/cg\"\n", detectImportPath(dir, "github.com/code-game-project/go-client"))
+	}
 
 	if g.needsMathBig {
 		file.WriteString("import \"math/big\"\n")
