@@ -31,6 +31,7 @@ Use `--help` for a complete list of available options.
 
 ## Supported languages
 
+- C#
 - Go
 - Markdown docs
 - TypeScript

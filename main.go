@@ -12,9 +12,10 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/AlecAivazis/survey/v2/terminal"
 	"github.com/Bananenpro/cli"
+	"github.com/spf13/pflag"
+
 	"github.com/code-game-project/cg-gen-events/cge"
 	"github.com/code-game-project/cg-gen-events/lang"
-	"github.com/spf13/pflag"
 )
 
 type generator struct {
@@ -24,6 +25,11 @@ type generator struct {
 }
 
 var availableGenerators = []generator{
+	{
+		displayName: "C#",
+		names:       []string{"cs", "c#", "csharp"},
+		generator:   &lang.CSharp{},
+	},
 	{
 		displayName: "Go",
 		names:       []string{"go", "golang"},
@@ -167,7 +173,7 @@ func main() {
 		}
 	}
 
-	err = os.Mkdir(output, 0755)
+	err = os.Mkdir(output, 0o755)
 	if err != nil && !os.IsExist(err) {
 		cli.Error("Failed to create output directory: %s", err)
 		os.Exit(1)
