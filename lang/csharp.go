@@ -60,6 +60,8 @@ func (c *CSharp) Generate(metadata cge.Metadata, objects []cge.Object, dir strin
 		file.WriteString("using System.Numerics;\n")
 	}
 
+	file.WriteString("\n#nullable disable warnings\n")
+
 	file.WriteString(c.builder.String())
 
 	file.Close()
