@@ -36,6 +36,11 @@ var availableGenerators = []generator{
 		generator:   &lang.Go{},
 	},
 	{
+		displayName: "Java",
+		names:       []string{"java"},
+		generator:   &lang.Java{},
+	},
+	{
 		displayName: "Markdown docs",
 		names:       []string{"markdown", "md", "docs"},
 		generator:   &lang.MarkdownDocs{},

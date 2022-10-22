@@ -33,6 +33,7 @@ Use `--help` for a complete list of available options.
 
 - C#
 - Go
+- Java
 - Markdown docs
 - TypeScript
 - JSON
