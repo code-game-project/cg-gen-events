@@ -16,7 +16,6 @@ const (
 	BOOL    TokenType = "BOOL"
 	INT32   TokenType = "INT32"
 	INT64   TokenType = "INT64"
-	BIGINT  TokenType = "BIGINT"
 	FLOAT32 TokenType = "FLOAT32"
 	FLOAT64 TokenType = "FLOAT64"
 

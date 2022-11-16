@@ -12,8 +12,6 @@ import (
 
 type CSharp struct {
 	builder strings.Builder
-
-	needsBigNum bool
 }
 
 func (c *CSharp) Generate(metadata cge.Metadata, objects []cge.Object, dir string) error {
@@ -54,10 +52,6 @@ func (c *CSharp) Generate(metadata cge.Metadata, objects []cge.Object, dir strin
 
 	if needsUsing {
 		fmt.Fprintf(file, "using CodeGame.Client;\n")
-	}
-
-	if c.needsBigNum {
-		file.WriteString("using System.Numerics;\n")
 	}
 
 	file.WriteString("\n#nullable disable warnings\n")
@@ -156,9 +150,6 @@ func (c *CSharp) csType(tokenType cge.TokenType, lexeme string, generic *cge.Pro
 		return "int"
 	case cge.INT64:
 		return "long"
-	case cge.BIGINT:
-		c.needsBigNum = true
-		return "BigInteger"
 	case cge.FLOAT32:
 		return "float"
 	case cge.FLOAT64:

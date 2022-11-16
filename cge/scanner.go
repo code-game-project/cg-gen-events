@@ -128,8 +128,6 @@ func (s *scanner) identifier() error {
 		s.addToken(INT32)
 	case "int64":
 		s.addToken(INT64)
-	case "bigint":
-		s.addToken(BIGINT)
 	case "float32":
 		s.addToken(FLOAT32)
 	case "float", "float64":

@@ -192,8 +192,6 @@ func (m *MarkdownDocs) mdType(tokenType cge.TokenType, lexeme string, generic *c
 		return "int32"
 	case cge.INT64:
 		return "int64"
-	case cge.BIGINT:
-		return "bigint"
 	case cge.FLOAT32:
 		return "float32"
 	case cge.FLOAT64:

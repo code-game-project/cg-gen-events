@@ -212,8 +212,6 @@ func (j *Java) javaType(tokenType cge.TokenType, lexeme string, generic *cge.Pro
 		return "int"
 	case cge.INT64:
 		return "long"
-	case cge.BIGINT:
-		return "String"
 	case cge.FLOAT32:
 		return "float"
 	case cge.FLOAT64:

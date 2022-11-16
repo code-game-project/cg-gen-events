@@ -14,8 +14,6 @@ import (
 
 type Go struct {
 	builder strings.Builder
-
-	needsMathBig bool
 }
 
 func (g *Go) Generate(metadata cge.Metadata, objects []cge.Object, dir string) error {
@@ -55,10 +53,6 @@ func (g *Go) Generate(metadata cge.Metadata, objects []cge.Object, dir string) e
 
 	if needsImport {
 		fmt.Fprintf(file, "\nimport \"%s/cg\"\n", detectImportPath(dir, "github.com/code-game-project/go-client"))
-	}
-
-	if g.needsMathBig {
-		file.WriteString("import \"math/big\"\n")
 	}
 
 	file.WriteString(g.builder.String())
@@ -151,9 +145,6 @@ func (g *Go) goType(tokenType cge.TokenType, lexeme string, generic *cge.Propert
 		return "int"
 	case cge.INT64:
 		return "int64"
-	case cge.BIGINT:
-		g.needsMathBig = true
-		return "big.Int"
 	case cge.FLOAT32:
 		return "float32"
 	case cge.FLOAT64:

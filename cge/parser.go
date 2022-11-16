@@ -9,7 +9,7 @@ import (
 	"github.com/Bananenpro/cli"
 )
 
-const CGEVersion = "0.4"
+const CGEVersion = "0.5"
 
 type Metadata struct {
 	Name       string
@@ -323,7 +323,7 @@ func (p *parser) enumValue() (Property, error) {
 }
 
 func (p *parser) propertyType() (*PropertyType, error) {
-	if !p.match(STRING, BOOL, INT32, INT64, BIGINT, FLOAT32, FLOAT64, MAP, LIST, IDENTIFIER, TYPE, ENUM) {
+	if !p.match(STRING, BOOL, INT32, INT64, FLOAT32, FLOAT64, MAP, LIST, IDENTIFIER, TYPE, ENUM) {
 		return &PropertyType{}, p.newError("Expect type after property name.")
 	}
 

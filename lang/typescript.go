@@ -164,8 +164,6 @@ func (g *TypeScript) tsType(tokenType cge.TokenType, lexeme string, generic *cge
 		return "number"
 	case cge.INT64:
 		return "number"
-	case cge.BIGINT:
-		return "bigint"
 	case cge.FLOAT32:
 		return "number"
 	case cge.FLOAT64:
