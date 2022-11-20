@@ -9,8 +9,6 @@ import (
 	"github.com/Bananenpro/cli"
 )
 
-const CGEVersion = "0.5"
-
 type Metadata struct {
 	Name       string
 	Comments   []string
@@ -66,9 +64,10 @@ type parser struct {
 	accessedTypeIdentifiers []Token
 	objects                 []Object
 	errors                  []error
+	cgeVersion              string
 }
 
-func Parse(source io.Reader) (Metadata, []Object, []error) {
+func Parse(source io.Reader, cgeVersion string) (Metadata, []Object, []error) {
 	tokens, lines, err := scan(source)
 	if err != nil {
 		return Metadata{}, nil, []error{err}
@@ -83,6 +82,7 @@ func Parse(source io.Reader) (Metadata, []Object, []error) {
 		accessedTypeIdentifiers: make([]Token, 0),
 		objects:                 make([]Object, 0),
 		errors:                  make([]error, 0),
+		cgeVersion:              cgeVersion,
 	}
 
 	return parser.parse()
@@ -97,8 +97,8 @@ func (p *parser) parse() (Metadata, []Object, []error) {
 	if err != nil {
 		return Metadata{}, nil, []error{err}
 	}
-	if !isVersionCompatible(version) {
-		cli.Warn("CGE version mismatch! Input file: v%s, cg-gen-events: v%s. There might be parsing issues.", version, CGEVersion)
+	if !isVersionCompatible(version, p.cgeVersion) {
+		cli.Warn("CGE version mismatch! Input file: v%s, cg-gen-events: v%s. There might be parsing issues.", version, p.cgeVersion)
 	}
 
 	for p.peek().Type != EOF {
@@ -426,9 +426,13 @@ func (p *parser) synchronize() {
 	}
 }
 
-func isVersionCompatible(version string) bool {
-	fileParts := strings.Split(version, ".")
-	programParts := strings.Split(CGEVersion, ".")
+func isVersionCompatible(fileVersion, cgeVersion string) bool {
+	if cgeVersion == "dev" {
+		return true
+	}
+
+	fileParts := strings.Split(fileVersion, ".")
+	programParts := strings.Split(cgeVersion, ".")
 
 	if fileParts[0] != programParts[0] {
 		return false

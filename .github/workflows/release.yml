@@ -47,7 +47,7 @@ jobs:
       shell: bash
       run: |
         echo ::set-output name=TAG::${GITHUB_REF/refs\/tags\//}
-    - name: Build and Publish
+    - name: cg-gen-events
       uses: wangyoucao577/go-release-action@v1.28
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -56,3 +56,20 @@ jobs:
         asset_name: cg-gen-events-${{matrix.goos}}-${{matrix.goarch}}
         extra_files: LICENSE README.md
         release_tag: ${{ steps.tags.outputs.tag }}
+        ldflags: -X "main.version=${{ steps.tags.outputs.tag }}"
+        md5sum: false
+        project_path: ./cmd/cg-gen-events
+        binary_name: cg-gen-events
+    - name: cge-ls
+      uses: wangyoucao577/go-release-action@v1.28
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        goos: ${{ matrix.goos }}
+        goarch: ${{ matrix.goarch }}
+        asset_name: cge-ls-${{matrix.goos}}-${{matrix.goarch}}
+        extra_files: LICENSE cmd/cge-ls/README.md
+        release_tag: ${{ steps.tags.outputs.tag }}
+        ldflags: -X "main.version=${{ steps.tags.outputs.tag }}"
+        md5sum: false
+        project_path: ./cmd/cge-ls
+        binary_name: cge-ls

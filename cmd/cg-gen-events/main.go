@@ -18,6 +18,8 @@ import (
 	"github.com/code-game-project/cg-gen-events/lang"
 )
 
+var version = "dev"
+
 type generator struct {
 	displayName string
 	names       []string
@@ -121,7 +123,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	metadata, objects, errs := cge.Parse(input)
+	metadata, objects, errs := cge.Parse(input, version)
 	if len(errs) > 0 {
 		for _, e := range errs {
 			cli.Error(e.Error())
