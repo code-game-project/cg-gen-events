@@ -13,8 +13,8 @@ import (
 )
 
 var (
-	name           = "cge-ls"
-	version string = "dev"
+	name    = "cge-ls"
+	version = "dev"
 )
 
 var handler protocol.Handler
@@ -23,13 +23,14 @@ func main() {
 	logging.Configure(0, nil)
 
 	handler = protocol.Handler{
-		Initialize:            initialize,
-		Initialized:           initialized,
-		Shutdown:              shutdown,
-		SetTrace:              setTrace,
-		TextDocumentDidOpen:   textDocumentDidOpen,
-		TextDocumentDidChange: textDocumentDidChange,
-		TextDocumentDidClose:  textDocumentDidClose,
+		Initialize:             initialize,
+		Initialized:            initialized,
+		Shutdown:               shutdown,
+		SetTrace:               setTrace,
+		TextDocumentDidOpen:    textDocumentDidOpen,
+		TextDocumentDidChange:  textDocumentDidChange,
+		TextDocumentDidClose:   textDocumentDidClose,
+		TextDocumentCompletion: textDocumentCompletion,
 	}
 
 	var protocol string

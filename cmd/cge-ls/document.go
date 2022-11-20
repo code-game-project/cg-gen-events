@@ -16,6 +16,7 @@ type Document struct {
 	content     string
 	changed     bool
 	diagnostics []protocol.Diagnostic
+	objects     []cge.Object
 }
 
 var documents sync.Map
@@ -32,7 +33,7 @@ func (d *Document) validate(notify glsp.NotifyFunc) {
 
 	d.diagnostics = d.diagnostics[:0]
 
-	_, _, errs := cge.Parse(bytes.NewBufferString(d.content), version)
+	_, objects, errs := cge.Parse(bytes.NewBufferString(d.content), version)
 	if len(errs) > 0 {
 		for _, err := range errs {
 			if e, ok := err.(cge.ParseError); ok {
@@ -56,6 +57,7 @@ func (d *Document) validate(notify glsp.NotifyFunc) {
 		}
 		return
 	}
+	d.objects = objects
 }
 
 func (d *Document) sendDiagnostics(notify glsp.NotifyFunc) {
@@ -71,6 +73,7 @@ func textDocumentDidOpen(context *glsp.Context, params *protocol.DidOpenTextDocu
 		content:     params.TextDocument.Text,
 		changed:     true,
 		diagnostics: make([]protocol.Diagnostic, 0),
+		objects:     make([]cge.Object, 0),
 	}
 	documents.Store(params.TextDocument.URI, document)
 	go document.validate(context.Notify)
