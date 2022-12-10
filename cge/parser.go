@@ -105,7 +105,9 @@ func (p *parser) parse() (Metadata, []Object, []error) {
 		decl, err := p.declaration()
 		if err != nil {
 			p.errors = append(p.errors, err)
-			p.synchronize()
+			if e, ok := err.(ParseError); ok {
+				p.skipBlock(e.inBlock)
+			}
 			continue
 		}
 		p.objects = append(p.objects, decl)
@@ -113,7 +115,7 @@ func (p *parser) parse() (Metadata, []Object, []error) {
 
 	for _, id := range p.accessedTypeIdentifiers {
 		if _, ok := p.types[id.Lexeme]; !ok {
-			p.errors = append(p.errors, p.newErrorAt(fmt.Sprintf("Undefined type '%s'.", id.Lexeme), id))
+			p.errors = append(p.errors, p.newErrorAt(fmt.Sprintf("Undefined type '%s'.", id.Lexeme), id, true))
 		}
 	}
 
@@ -137,11 +139,11 @@ func (p *parser) name() (string, []string, error) {
 	}
 
 	if !p.match(NAME) {
-		return "", nil, p.newError("Expect 'name' token.")
+		return "", nil, p.newError("Expect 'name' token.", false)
 	}
 
 	if !p.match(IDENTIFIER) {
-		return "", nil, p.newError("Expect name of game.")
+		return "", nil, p.newError("Expect name of game.", false)
 	}
 
 	return p.previous().Lexeme, comments, nil
@@ -149,11 +151,11 @@ func (p *parser) name() (string, []string, error) {
 
 func (p *parser) version() (string, error) {
 	if !p.match(VERSION) {
-		return "", p.newError("Expect 'version' token.")
+		return "", p.newError("Expect 'version' token.", false)
 	}
 
 	if !p.match(VERSION_NUMBER) {
-		return "", p.newError("Expect CGE version.")
+		return "", p.newError("Expect CGE version.", false)
 	}
 
 	return p.previous().Lexeme, nil
@@ -166,19 +168,19 @@ func (p *parser) declaration() (Object, error) {
 	}
 
 	if !p.match(CONFIG, COMMAND, EVENT, TYPE, ENUM) {
-		return Object{}, p.newError("Expect config, command, event, type or enum declaration.")
+		return Object{}, p.newError("Expect config, command, event, type or enum declaration.", false)
 	}
 
 	objectType := p.previous().Type
 
 	if objectType == CONFIG {
 		if p.config {
-			return Object{}, p.newErrorAt("Only one config object is allowed.", p.previous())
+			return Object{}, p.newErrorAt("Only one config object is allowed.", p.previous(), false)
 		}
 		p.config = true
 	} else {
 		if !p.match(IDENTIFIER) {
-			return Object{}, p.newError(fmt.Sprintf("Expect identifier after '%s' keyword.", strings.ToLower(string(objectType))))
+			return Object{}, p.newError(fmt.Sprintf("Expect identifier after '%s' keyword.", strings.ToLower(string(objectType))), false)
 		}
 	}
 	name := p.previous()
@@ -186,26 +188,26 @@ func (p *parser) declaration() (Object, error) {
 	switch objectType {
 	case COMMAND:
 		if _, ok := p.commands[name.Lexeme]; ok {
-			return Object{}, p.newErrorAt(fmt.Sprintf("Command '%s' already defined.", name.Lexeme), name)
+			return Object{}, p.newErrorAt(fmt.Sprintf("Command '%s' already defined.", name.Lexeme), name, false)
 		}
 		p.commands[name.Lexeme] = struct{}{}
 	case EVENT:
 		if _, ok := p.events[name.Lexeme]; ok {
-			return Object{}, p.newErrorAt(fmt.Sprintf("Event '%s' already defined.", name.Lexeme), name)
+			return Object{}, p.newErrorAt(fmt.Sprintf("Event '%s' already defined.", name.Lexeme), name, false)
 		}
 		p.events[name.Lexeme] = struct{}{}
 	case TYPE, ENUM:
 		if _, ok := p.types[name.Lexeme]; ok {
-			return Object{}, p.newErrorAt(fmt.Sprintf("Type '%s' already defined.", name.Lexeme), name)
+			return Object{}, p.newErrorAt(fmt.Sprintf("Type '%s' already defined.", name.Lexeme), name, false)
 		}
 		p.types[name.Lexeme] = struct{}{}
 	}
 
 	if !p.match(OPEN_CURLY) {
 		if objectType == CONFIG {
-			return Object{}, p.newError(fmt.Sprintf("Expect block after %s keyword.", strings.ToLower(string(objectType))))
+			return Object{}, p.newError(fmt.Sprintf("Expect block after %s keyword.", strings.ToLower(string(objectType))), true)
 		} else {
-			return Object{}, p.newError(fmt.Sprintf("Expect block after %s name.", strings.ToLower(string(objectType))))
+			return Object{}, p.newError(fmt.Sprintf("Expect block after %s name.", strings.ToLower(string(objectType))), true)
 		}
 	}
 
@@ -235,7 +237,7 @@ func (p *parser) block() ([]Property, error) {
 		property, err := p.property()
 		if err != nil {
 			p.errors = append(p.errors, err)
-			p.synchronize()
+			p.skipProperty()
 			continue
 		}
 		properties = append(properties, property)
@@ -244,10 +246,8 @@ func (p *parser) block() ([]Property, error) {
 		}
 	}
 
-	p.match(COMMA)
-
 	if !p.match(CLOSE_CURLY) {
-		return nil, p.newError("Expect '}' after block.")
+		return nil, p.newError("Expect '}' after block.", true)
 	}
 
 	return properties, nil
@@ -260,7 +260,7 @@ func (p *parser) enumBlock() ([]Property, error) {
 		property, err := p.enumValue()
 		if err != nil {
 			p.errors = append(p.errors, err)
-			p.synchronize()
+			p.skipProperty()
 			continue
 		}
 		properties = append(properties, property)
@@ -269,10 +269,8 @@ func (p *parser) enumBlock() ([]Property, error) {
 		}
 	}
 
-	p.match(COMMA)
-
 	if !p.match(CLOSE_CURLY) {
-		return nil, p.newError("Expect '}' after block.")
+		return nil, p.newError("Expect '}' after block.", true)
 	}
 
 	return properties, nil
@@ -285,12 +283,12 @@ func (p *parser) property() (Property, error) {
 	}
 
 	if !p.match(IDENTIFIER) {
-		return Property{}, p.newError("Expect property name.")
+		return Property{}, p.newError("Expect property name.", true)
 	}
 	name := p.previous()
 
 	if !p.match(COLON) {
-		return Property{}, p.newError("Expect ':' after property name.")
+		return Property{}, p.newError("Expect ':' after property name.", true)
 	}
 
 	propertyType, err := p.propertyType()
@@ -312,7 +310,7 @@ func (p *parser) enumValue() (Property, error) {
 	}
 
 	if !p.match(IDENTIFIER) {
-		return Property{}, p.newError("Expect property name.")
+		return Property{}, p.newError("Expect property name.", true)
 	}
 	name := p.previous()
 
@@ -324,7 +322,7 @@ func (p *parser) enumValue() (Property, error) {
 
 func (p *parser) propertyType() (*PropertyType, error) {
 	if !p.match(STRING, BOOL, INT32, INT64, FLOAT32, FLOAT64, MAP, LIST, IDENTIFIER, TYPE, ENUM) {
-		return &PropertyType{}, p.newError("Expect type after property name.")
+		return &PropertyType{}, p.newError("Expect type after property name.", true)
 	}
 
 	propertyType := p.previous()
@@ -334,17 +332,17 @@ func (p *parser) propertyType() (*PropertyType, error) {
 		p.accessedTypeIdentifiers = append(p.accessedTypeIdentifiers, propertyType)
 	} else if propertyType.Type == TYPE || propertyType.Type == ENUM {
 		if !p.match(IDENTIFIER) {
-			return &PropertyType{}, p.newError(fmt.Sprintf("Expect identifier after 'type' keyword."))
+			return &PropertyType{}, p.newError(fmt.Sprintf("Expect identifier after 'type' keyword."), true)
 		}
 
 		identifier := p.previous()
 		if _, ok := p.types[identifier.Lexeme]; ok {
-			return &PropertyType{}, p.newErrorAt(fmt.Sprintf("Type '%s' already defined.", identifier.Lexeme), identifier)
+			return &PropertyType{}, p.newErrorAt(fmt.Sprintf("Type '%s' already defined.", identifier.Lexeme), identifier, true)
 		}
 		p.types[identifier.Lexeme] = struct{}{}
 
 		if !p.match(OPEN_CURLY) {
-			return &PropertyType{}, p.newError("Expect block after type name.")
+			return &PropertyType{}, p.newError("Expect block after type name.", true)
 		}
 
 		var properties []Property
@@ -367,7 +365,7 @@ func (p *parser) propertyType() (*PropertyType, error) {
 		propertyType = identifier
 	} else if propertyType.Type == MAP || propertyType.Type == LIST {
 		if !p.match(LESS) {
-			return &PropertyType{}, p.newError("Expect generic.")
+			return &PropertyType{}, p.newError("Expect generic.", true)
 		}
 
 		var err error
@@ -377,7 +375,7 @@ func (p *parser) propertyType() (*PropertyType, error) {
 		}
 
 		if !p.match(GREATER) {
-			return &PropertyType{}, p.newError("Expect '>' after generic value.")
+			return &PropertyType{}, p.newError("Expect '>' after generic value.", true)
 		}
 	}
 
@@ -409,16 +407,51 @@ func (p *parser) peekNext() Token {
 	return p.tokens[p.current+1]
 }
 
-func (p *parser) synchronize() {
+func (p *parser) skipBlock(inBlock bool) {
 	if p.peek().Type == EOF {
 		return
 	}
-	p.current++
+
+	if !inBlock {
+		for {
+			if p.peek().Type == EOF {
+				return
+			}
+			if p.peek().Type == OPEN_CURLY {
+				p.current++
+				break
+			}
+			p.current++
+		}
+	}
+
+	nestingLevel := 1
+	for p.peek().Type != EOF && nestingLevel > 0 {
+		if p.peek().Type == OPEN_CURLY {
+			nestingLevel++
+		} else if p.peek().Type == CLOSE_CURLY {
+			nestingLevel--
+		}
+		p.current++
+	}
+}
+
+func (p *parser) skipProperty() {
+	if p.peek().Type == EOF {
+		return
+	}
+
+	nestingLevel := 0
 	for p.peek().Type != EOF {
-		switch p.peek().Type {
-		case EVENT, TYPE, ENUM:
-			return
-		case CLOSE_CURLY:
+		if p.peek().Type == OPEN_CURLY {
+			nestingLevel++
+		} else if p.peek().Type == CLOSE_CURLY {
+			nestingLevel--
+			if nestingLevel == -1 {
+				return
+			}
+		}
+		if p.peek().Type == COMMA && nestingLevel == 0 {
 			p.current++
 			return
 		}
@@ -459,24 +492,27 @@ type ParseError struct {
 	Token   Token
 	Message string
 	Line    []rune
+	inBlock bool
 }
 
 func (p ParseError) Error() string {
 	return generateErrorText(p.Message, p.Line, p.Token.Line, p.Token.Column, p.Token.Column+len([]rune(p.Token.Lexeme)))
 }
 
-func (p *parser) newError(message string) error {
+func (p *parser) newError(message string, inBlock bool) error {
 	return ParseError{
 		Token:   p.peek(),
 		Message: message,
 		Line:    p.lines[p.peek().Line],
+		inBlock: inBlock,
 	}
 }
 
-func (p *parser) newErrorAt(message string, token Token) error {
+func (p *parser) newErrorAt(message string, token Token, inBlock bool) error {
 	return ParseError{
 		Token:   token,
 		Message: message,
 		Line:    p.lines[token.Line],
+		inBlock: inBlock,
 	}
 }
