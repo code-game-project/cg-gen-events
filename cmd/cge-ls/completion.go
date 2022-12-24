@@ -13,11 +13,11 @@ import (
 
 var snippets = map[string]string{
 	"config declaration":  "config {\n\t$0\n}",
-	"event declaration":   "event ${1:name} {\n\t$0\n}",
-	"command declaration": "command ${1:name} {\n\t$0\n}",
-	"type declaration":    "type ${1:name} {\n\t$0\n}",
-	"enum declaration":    "enum ${1:name} {\n\t$0\n}",
-	"name":                "name ${1:name}",
+	"event declaration":   "event ${1:event_name} {\n\t$0\n}",
+	"command declaration": "command ${1:command_name} {\n\t$0\n}",
+	"type declaration":    "type ${1:type_name} {\n\t$0\n}",
+	"enum declaration":    "enum ${1:enum_name} {\n\t$0\n}",
+	"name":                "name ${1:game_name}",
 }
 
 func init() {
