@@ -33,7 +33,7 @@ In [`coc-settings.json`](https://github.com/neoclide/coc.nvim/wiki/Language-serv
 {
   "languageserver": {
     "cge-ls": {
-      "command": "cge-ls",
+      "command": "codegame lsp cge",
       "filetypes": ["cge"],
       "rootPatterns": [".git/", "."]
     }
@@ -48,15 +48,15 @@ In `init.lua`:
 local lspconfig = require('lspconfig')
 local configs = require('lspconfig.configs')
 configs.cge = {
-  default_config = {
-    cmd = { "cge-ls" },
-    root_dir = lspconfig.util.root_pattern('.git'),
-    single_file_support = true,
-    filetypes = { 'cge' },
-    init_options = {
-      command = { 'cge-ls' },
-    },
-  },
+	default_config = {
+		cmd = { "codegame", "lsp", "cge" },
+		root_dir = lspconfig.util.root_pattern('.git'),
+		single_file_support = true,
+		filetypes = { 'cge' },
+		init_options = {
+			command = {'codegame', 'lsp', 'cge'},
+		},
+	},
 }
 lspconfig.cge.setup{}
 ```
