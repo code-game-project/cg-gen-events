@@ -500,19 +500,27 @@ func (p ParseError) Error() string {
 }
 
 func (p *parser) newError(message string, inBlock bool) error {
+	line := []rune{}
+	if p.peek().Line >= 0 {
+		line = p.lines[p.peek().Line]
+	}
 	return ParseError{
 		Token:   p.peek(),
 		Message: message,
-		Line:    p.lines[p.peek().Line],
+		Line:    line,
 		inBlock: inBlock,
 	}
 }
 
 func (p *parser) newErrorAt(message string, token Token, inBlock bool) error {
+	line := []rune{}
+	if token.Line >= 0 {
+		line = p.lines[token.Line]
+	}
 	return ParseError{
 		Token:   token,
 		Message: message,
-		Line:    p.lines[token.Line],
+		Line:    line,
 		inBlock: inBlock,
 	}
 }

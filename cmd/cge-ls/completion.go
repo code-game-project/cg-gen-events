@@ -17,7 +17,7 @@ var snippets = map[string]string{
 	"command declaration": "command ${1:name} {\n\t$0\n}",
 	"type declaration":    "type ${1:name} {\n\t$0\n}",
 	"enum declaration":    "enum ${1:name} {\n\t$0\n}",
-	"name":                "name {1:name}",
+	"name":                "name ${1:name}",
 }
 
 func init() {
