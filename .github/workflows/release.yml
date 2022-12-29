@@ -7,20 +7,12 @@ on:
 
 jobs:
   create_release:
-      name:  Create release
-      runs-on: ubuntu-latest
-      steps:
-        - name: Checkout
-          uses: actions/checkout@v3
-          with:
-            fetch-depth: 0
-        - name: Create Release
-          id: create_release
-          uses: elgohr/Github-Release-Action@v4
-          env:
-            GITHUB_TOKEN: ${{ github.token }}
-          with:
-            title: ${{ github.ref_name }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - uses: actions/checkout@v2
+    - uses: ncipollo/release-action@v1
   publish_binaries:
     name: Release Go Binary
     runs-on: ubuntu-latest
