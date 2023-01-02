@@ -80,7 +80,7 @@ func (c *CSharp) generateConfig(object cge.Object) {
 func (c *CSharp) generateCommand(object cge.Object) {
 	c.builder.WriteString("\n")
 	c.generateComments("", object.Comments)
-	c.builder.WriteString(fmt.Sprintf("public class %sCmd : CommandData\n{\n", snakeToPascal(object.Name)))
+	c.builder.WriteString(fmt.Sprintf("public class %sCmd : CommandData\n{\n", snakeToPascal(object.Name.Lexeme)))
 
 	c.generateProperties(object.Properties)
 
@@ -90,7 +90,7 @@ func (c *CSharp) generateCommand(object cge.Object) {
 func (c *CSharp) generateEvent(object cge.Object) {
 	c.builder.WriteString("\n")
 	c.generateComments("", object.Comments)
-	c.builder.WriteString(fmt.Sprintf("public class %sEvent : EventData\n{\n", snakeToPascal(object.Name)))
+	c.builder.WriteString(fmt.Sprintf("public class %sEvent : EventData\n{\n", snakeToPascal(object.Name.Lexeme)))
 
 	c.generateProperties(object.Properties)
 
@@ -100,7 +100,7 @@ func (c *CSharp) generateEvent(object cge.Object) {
 func (c *CSharp) generateType(object cge.Object) {
 	c.builder.WriteString("\n")
 	c.generateComments("", object.Comments)
-	c.builder.WriteString(fmt.Sprintf("public class %s\n{\n", snakeToPascal(object.Name)))
+	c.builder.WriteString(fmt.Sprintf("public class %s\n{\n", snakeToPascal(object.Name.Lexeme)))
 
 	c.generateProperties(object.Properties)
 
@@ -111,7 +111,7 @@ func (c *CSharp) generateEnum(object cge.Object) {
 	c.builder.WriteString("\n")
 	c.generateComments("", object.Comments)
 	c.builder.WriteString("[JsonConverter(typeof(JsonStringEnumConverter))]\n")
-	c.builder.WriteString(fmt.Sprintf("public enum %s\n{\n", snakeToPascal(object.Name)))
+	c.builder.WriteString(fmt.Sprintf("public enum %s\n{\n", snakeToPascal(object.Name.Lexeme)))
 
 	for _, property := range object.Properties {
 		c.generateComments("    ", property.Comments)

@@ -83,15 +83,15 @@ func (d *Document) getCompletions(item string, line int) []protocol.CompletionIt
 	}
 
 	for _, o := range d.objects {
-		if (o.Type == cge.TYPE || o.Type == cge.ENUM) && strings.HasPrefix(o.Name, item) {
-			detail := o.Name
+		if (o.Type == cge.TYPE || o.Type == cge.ENUM) && strings.HasPrefix(o.Name.Lexeme, item) {
+			detail := o.Name.Lexeme
 			if o.Type == cge.ENUM {
 				detail = "enum " + detail
 			} else {
 				detail = "type " + detail
 			}
 			completions = append(completions, protocol.CompletionItem{
-				Label:         o.Name,
+				Label:         o.Name.Lexeme,
 				Kind:          &classCompletionType,
 				Detail:        &detail,
 				Documentation: strings.Join(o.Comments, "\n"),

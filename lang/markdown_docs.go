@@ -89,7 +89,7 @@ func (m *MarkdownDocs) generateCommand(object cge.Object) {
 		m.commandTextBuilder.WriteString("## Commands\n")
 	}
 	m.commandTextBuilder.WriteString("\n")
-	m.commandTextBuilder.WriteString(fmt.Sprintf("### %s\n\n", object.Name))
+	m.commandTextBuilder.WriteString(fmt.Sprintf("### %s\n\n", object.Name.Lexeme))
 
 	for _, comment := range object.Comments {
 		m.commandTextBuilder.WriteString(comment + "\n")
@@ -107,7 +107,7 @@ func (m *MarkdownDocs) generateEvent(object cge.Object) {
 		m.eventTextBuilder.WriteString("## Events\n")
 	}
 	m.eventTextBuilder.WriteString("\n")
-	m.eventTextBuilder.WriteString(fmt.Sprintf("### %s\n\n", object.Name))
+	m.eventTextBuilder.WriteString(fmt.Sprintf("### %s\n\n", object.Name.Lexeme))
 
 	for _, comment := range object.Comments {
 		m.eventTextBuilder.WriteString(comment + "\n")
@@ -125,7 +125,7 @@ func (m *MarkdownDocs) generateType(object cge.Object) {
 		m.typeTextBuilder.WriteString("## Types\n")
 	}
 	m.typeTextBuilder.WriteString("\n")
-	m.typeTextBuilder.WriteString(fmt.Sprintf("### %s\n\n", object.Name))
+	m.typeTextBuilder.WriteString(fmt.Sprintf("### %s\n\n", object.Name.Lexeme))
 
 	for _, comment := range object.Comments {
 		m.typeTextBuilder.WriteString(comment + "\n")
@@ -143,7 +143,7 @@ func (m *MarkdownDocs) generateEnum(object cge.Object) {
 		m.enumTextBuilder.WriteString("## Enums\n")
 	}
 	m.enumTextBuilder.WriteString("\n")
-	m.enumTextBuilder.WriteString(fmt.Sprintf("### %s\n\n", object.Name))
+	m.enumTextBuilder.WriteString(fmt.Sprintf("### %s\n\n", object.Name.Lexeme))
 
 	for _, comment := range object.Comments {
 		m.enumTextBuilder.WriteString(comment + "\n")

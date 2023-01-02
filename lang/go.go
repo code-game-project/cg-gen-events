@@ -79,8 +79,8 @@ func (g *Go) generateConfig(object cge.Object) {
 func (g *Go) generateCommand(object cge.Object) {
 	g.builder.WriteString("\n")
 	g.generateComments("", object.Comments)
-	g.builder.WriteString(fmt.Sprintf("const %sCmd cg.CommandName = \"%s\"\n\n", snakeToPascal(object.Name), object.Name))
-	g.builder.WriteString(fmt.Sprintf("type %sCmdData struct {\n", snakeToPascal(object.Name)))
+	g.builder.WriteString(fmt.Sprintf("const %sCmd cg.CommandName = \"%s\"\n\n", snakeToPascal(object.Name.Lexeme), object.Name.Lexeme))
+	g.builder.WriteString(fmt.Sprintf("type %sCmdData struct {\n", snakeToPascal(object.Name.Lexeme)))
 
 	g.generateProperties(object.Properties)
 
@@ -90,8 +90,8 @@ func (g *Go) generateCommand(object cge.Object) {
 func (g *Go) generateEvent(object cge.Object) {
 	g.builder.WriteString("\n")
 	g.generateComments("", object.Comments)
-	g.builder.WriteString(fmt.Sprintf("const %sEvent cg.EventName = \"%s\"\n\n", snakeToPascal(object.Name), object.Name))
-	g.builder.WriteString(fmt.Sprintf("type %sEventData struct {\n", snakeToPascal(object.Name)))
+	g.builder.WriteString(fmt.Sprintf("const %sEvent cg.EventName = \"%s\"\n\n", snakeToPascal(object.Name.Lexeme), object.Name.Lexeme))
+	g.builder.WriteString(fmt.Sprintf("type %sEventData struct {\n", snakeToPascal(object.Name.Lexeme)))
 
 	g.generateProperties(object.Properties)
 
@@ -101,7 +101,7 @@ func (g *Go) generateEvent(object cge.Object) {
 func (g *Go) generateType(object cge.Object) {
 	g.builder.WriteString("\n")
 	g.generateComments("", object.Comments)
-	g.builder.WriteString(fmt.Sprintf("type %s struct {\n", snakeToPascal(object.Name)))
+	g.builder.WriteString(fmt.Sprintf("type %s struct {\n", snakeToPascal(object.Name.Lexeme)))
 
 	g.generateProperties(object.Properties)
 
@@ -111,14 +111,14 @@ func (g *Go) generateType(object cge.Object) {
 func (g *Go) generateEnum(object cge.Object) {
 	g.builder.WriteString("\n")
 	g.generateComments("", object.Comments)
-	g.builder.WriteString(fmt.Sprintf("type %s string\n", snakeToPascal(object.Name)))
+	g.builder.WriteString(fmt.Sprintf("type %s string\n", snakeToPascal(object.Name.Lexeme)))
 	if len(object.Properties) > 0 {
-		g.builder.WriteString(fmt.Sprintf("\nconst (\n"))
+		g.builder.WriteString("\nconst (\n")
 		for _, property := range object.Properties {
 			g.generateComments("\t", property.Comments)
-			g.builder.WriteString(fmt.Sprintf("%s%s %s = \"%s\"\n", snakeToPascal(object.Name), snakeToPascal(property.Name), snakeToPascal(object.Name), property.Name))
+			g.builder.WriteString(fmt.Sprintf("%s%s %s = \"%s\"\n", snakeToPascal(object.Name.Lexeme), snakeToPascal(property.Name), snakeToPascal(object.Name.Lexeme), property.Name))
 		}
-		g.builder.WriteString(fmt.Sprintf(")\n"))
+		g.builder.WriteString(")\n")
 	}
 }
 

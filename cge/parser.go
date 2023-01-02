@@ -20,7 +20,7 @@ type ObjectType string
 type Object struct {
 	Comments   []string
 	Type       TokenType
-	Name       string
+	Name       Token
 	Properties []Property
 }
 
@@ -29,7 +29,7 @@ func (o Object) String() string {
 	for _, c := range o.Comments {
 		text = fmt.Sprintf("%s// %s\n", text, c)
 	}
-	text = fmt.Sprintf("%s%s {", text, o.Name)
+	text = fmt.Sprintf("%s%s {", text, o.Name.Lexeme)
 
 	for _, p := range o.Properties {
 		text = fmt.Sprintf("%s\n%s,", text, p)
@@ -124,6 +124,8 @@ func (p *parser) parse() (Metadata, []Object, []error) {
 			Type: CONFIG,
 		})
 	}
+
+	p.detectDeclarationCycles()
 
 	return Metadata{
 		Name:       name,
@@ -225,7 +227,7 @@ func (p *parser) declaration() (Object, error) {
 	return Object{
 		Comments:   comments,
 		Type:       objectType,
-		Name:       name.Lexeme,
+		Name:       name,
 		Properties: properties,
 	}, nil
 }
@@ -358,7 +360,7 @@ func (p *parser) propertyType() (*PropertyType, error) {
 
 		p.objects = append(p.objects, Object{
 			Type:       propertyType.Type,
-			Name:       identifier.Lexeme,
+			Name:       identifier,
 			Properties: properties,
 		})
 

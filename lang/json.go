@@ -98,7 +98,7 @@ func (j *JSON) generateConfig(object cge.Object) {
 
 func (j *JSON) generateCommand(object cge.Object) {
 	j.json.Commands = append(j.json.Commands, jsonType{
-		Name:       object.Name,
+		Name:       object.Name.Lexeme,
 		Comments:   object.Comments,
 		Properties: j.generateProperties(object.Properties),
 	})
@@ -106,7 +106,7 @@ func (j *JSON) generateCommand(object cge.Object) {
 
 func (j *JSON) generateEvent(object cge.Object) {
 	j.json.Events = append(j.json.Events, jsonType{
-		Name:       object.Name,
+		Name:       object.Name.Lexeme,
 		Comments:   object.Comments,
 		Properties: j.generateProperties(object.Properties),
 	})
@@ -114,7 +114,7 @@ func (j *JSON) generateEvent(object cge.Object) {
 
 func (j *JSON) generateType(object cge.Object) {
 	j.json.Types = append(j.json.Types, jsonType{
-		Name:       object.Name,
+		Name:       object.Name.Lexeme,
 		Comments:   object.Comments,
 		Properties: j.generateProperties(object.Properties),
 	})
@@ -122,7 +122,7 @@ func (j *JSON) generateType(object cge.Object) {
 
 func (j *JSON) generateEnum(object cge.Object) {
 	j.json.Enums = append(j.json.Enums, jsonEnum{
-		Name:     object.Name,
+		Name:     object.Name.Lexeme,
 		Comments: object.Comments,
 		Values:   j.generateEnumValues(object.Properties),
 	})

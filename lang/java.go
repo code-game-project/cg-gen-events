@@ -26,12 +26,12 @@ func (j *Java) Generate(metadata cge.Metadata, objects []cge.Object, dir string)
 	}
 
 	for _, o := range objects {
-		filename := snakeToPascal(o.Name) + ".java"
+		filename := snakeToPascal(o.Name.Lexeme) + ".java"
 		switch o.Type {
 		case cge.EVENT:
-			filename = snakeToPascal(o.Name) + "Event.java"
+			filename = snakeToPascal(o.Name.Lexeme) + "Event.java"
 		case cge.COMMAND:
-			filename = snakeToPascal(o.Name) + "Cmd.java"
+			filename = snakeToPascal(o.Name.Lexeme) + "Cmd.java"
 		case cge.CONFIG:
 			filename = "GameConfig.java"
 		}
@@ -98,7 +98,7 @@ func (j *Java) generateCommand(object cge.Object, writer io.Writer) {
 	j.fileHeader(object, writer)
 
 	j.generateComments("", object.Comments, writer)
-	fmt.Fprintf(writer, "public class %sCmd {\n", snakeToPascal(object.Name))
+	fmt.Fprintf(writer, "public class %sCmd {\n", snakeToPascal(object.Name.Lexeme))
 	j.generateProperties(object.Properties, writer)
 
 	j.constructors(object, writer)
@@ -109,7 +109,7 @@ func (j *Java) generateEvent(object cge.Object, writer io.Writer) {
 	j.fileHeader(object, writer)
 
 	j.generateComments("", object.Comments, writer)
-	fmt.Fprintf(writer, "public class %sEvent {\n", snakeToPascal(object.Name))
+	fmt.Fprintf(writer, "public class %sEvent {\n", snakeToPascal(object.Name.Lexeme))
 	j.generateProperties(object.Properties, writer)
 
 	j.constructors(object, writer)
@@ -120,7 +120,7 @@ func (j *Java) generateType(object cge.Object, writer io.Writer) {
 	j.fileHeader(object, writer)
 
 	j.generateComments("", object.Comments, writer)
-	fmt.Fprintf(writer, "public class %s {\n", snakeToPascal(object.Name))
+	fmt.Fprintf(writer, "public class %s {\n", snakeToPascal(object.Name.Lexeme))
 	j.generateProperties(object.Properties, writer)
 
 	j.constructors(object, writer)
@@ -131,7 +131,7 @@ func (j *Java) generateEnum(object cge.Object, writer io.Writer) {
 	j.fileHeader(object, writer)
 
 	j.generateComments("", object.Comments, writer)
-	fmt.Fprintf(writer, "public enum %s {\n", snakeToPascal(object.Name))
+	fmt.Fprintf(writer, "public enum %s {\n", snakeToPascal(object.Name.Lexeme))
 
 	for _, property := range object.Properties {
 		j.generateComments("    ", property.Comments, writer)
@@ -160,7 +160,7 @@ func (j *Java) generateComments(indent string, comments []string, writer io.Writ
 }
 
 func (j *Java) constructors(object cge.Object, writer io.Writer) {
-	name := snakeToPascal(object.Name)
+	name := snakeToPascal(object.Name.Lexeme)
 	switch object.Type {
 	case cge.EVENT:
 		name += "Event"
