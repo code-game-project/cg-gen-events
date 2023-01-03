@@ -113,7 +113,7 @@ func (g *TypeScript) generateEnum(object cge.Object) {
 func (g *TypeScript) generateProperties(properties []cge.Property, indentSize int, optional bool) {
 	indent := strings.Repeat("  ", indentSize)
 	for _, property := range properties {
-		g.generateComments("    ", property.Comments)
+		g.generateComments(indent, property.Comments)
 		var questionMark string
 		if optional {
 			questionMark = "?"
