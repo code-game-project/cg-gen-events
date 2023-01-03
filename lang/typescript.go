@@ -14,7 +14,7 @@ type TypeScript struct {
 }
 
 func (g *TypeScript) Generate(metadata cge.Metadata, objects []cge.Object, dir string) error {
-	file, err := os.Create(filepath.Join(dir, "event_definitions.d.ts"))
+	file, err := os.Create(filepath.Join(dir, "event_definitions.ts"))
 	if err != nil {
 		return err
 	}
